@@ -27,7 +27,7 @@ process_file(Base, Output0, File0) :-
     open(File, read, FileStream),
     read_term(FileStream, Term, []),
     (
-	Term =.. [:-,module(ModuleName, PublicPredicates)] ->
+	Term = (:- module(ModuleName, PublicPredicates)) ->
 	document_file(File, Output, ModuleName, PublicPredicates)
     ;   true
     ),
