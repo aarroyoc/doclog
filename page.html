@@ -3,9 +3,18 @@
   <head>
     <title>Module {{ module_name }} - Scryer Prolog documentation</title>
     <meta charset="utf-8"/>
+    <link rel="stylesheet" href="doclog.css"/>
   </head>
   <body>
     <h1>Module {{ module_name }}</h1>
-    <div>{{ module_description }}</div>
+    <div class="moduleDescription">{{ module_description }}</div>
+    <div class="predicates">
+      {% for predicate in predicates %}
+      <div class="predicate">
+	<h4>{{ predicate.name }}</h4>
+	<div>{{ predicate.description }}</div>
+      </div>
+      {% endfor %}
+    </div>
   </body>
 </html>
