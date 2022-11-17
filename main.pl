@@ -2,6 +2,7 @@
 :- use_module(library(dcgs)).
 :- use_module(library(files)).
 :- use_module(library(format)).
+:- use_module(library(iso_ext)).
 :- use_module(library(lists)).
 :- use_module(library(pio)).
 :- use_module(library(ordsets)).
@@ -125,10 +126,7 @@ predicate_name(PredicateName/Arity, Name) -->
     },
     seq(RestCs),
     {
-	append(NameCs, "(", Name0),
-	append(Name0, Args, Name1),
-	append(Name1, ")", Name2),
-	append(Name2, RestCs, Name)
+	phrase((NameCs,"(",seq(Args),")",seq(RestCs)), Name)
     }.
 
 predicate_description(Description) -->
@@ -211,9 +209,9 @@ string_without([], _) -->
 copy_css(Output) :-
     append(Output, ["doclog.css"], OutputFileSg),
     path_segments(OutputFile, OutputFileSg),
-    open("doclog.css", read, Stream),
-    get_n_chars(Stream, _, Css),
-    close(Stream),
-    open(OutputFile, write, StreamWrite),
-    format(StreamWrite, "~s", [Css]),
-    close(StreamWrite).
+    setup_call_cleanup(open("doclog.css", read, Stream),(
+	get_n_chars(Stream, _, Css),
+        setup_call_cleanup(open(OutputFile, write, StreamWrite),
+            format(StreamWrite, "~s", [Css]),
+            close(StreamWrite))),
+        close(Stream)).
