@@ -2,22 +2,14 @@
 <html>
   <head>
     <meta charset="utf-8">
-    <title>Scryer Prolog documentation</title>
-    <link rel="stylesheet" href="doclog.css"/>
+    <title>{{ project_name }} documentation</title>
+    <link rel="stylesheet" href="/doclog.css"/>
   </head>
   <body>
-    <h1>Scryer Prolog documentation</h1>
-    <h2>Modules</h2>
-    <ul>
-      {% for file in files %}
-      <li><a href="{{ file }}.html">{{ file }}</a></li>
-      {% endfor %}
-    </ul>
-    <h2>Subpages</h2>
-    <ul>
-      {% for dir in dirs %}
-      <li><a href="{{ dir }}">{{ dir }}</a></li>
-      {% endfor %}
-    </ul>
+    <h1>{{ project_name }} documentation</h1>
+    <div class="mainContent">
+      <nav>{{ nav }}</nav>
+      <main>{{ readme }}</main>
+    </div>
   </body>
 </html>

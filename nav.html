@@ -1,0 +1,8 @@
+<ul class="navlist">
+  {% for dir in dirs %}
+  <li><span>{{ dir.name }}/</span>{{ dir.nav }}</li>
+  {% endfor %}
+  {% for file in files %}
+    <li><a href="{{ file.link }}.html">{{ file.name }}</a></li>
+  {% endfor %}
+</ul>

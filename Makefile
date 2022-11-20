@@ -1,6 +1,6 @@
-.PHONY: gen-docs
-gen-docs:
-	/home/aarroyoc/dev/scryer-prolog/target/release/scryer-prolog -g 'run("/home/aarroyoc/dev/scryer-prolog/src/lib", "output"),halt' main.pl
+.PHONY: gen-docs-scryer
+gen-docs-scryer:
+	bash doclog.sh scryer.config.pl
 
 .PHONY: clean
 clean:

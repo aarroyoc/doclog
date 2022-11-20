@@ -10,17 +10,65 @@
 :- use_module('../teruel/teruel').
 :- use_module('../marquete/marquete').
 
-run(DocsFolder, OutputFolder) :-
-    portray_clause(doclog(1, 0, 0)),
+run(ConfigFile) :-
+    portray_clause(doclog(1, 0, 0)),    
+    atom_chars(ConfigFileA, ConfigFile),
+    consult(ConfigFileA),
+    generate_nav(Nav),
+    generate_page_docs(Nav),
+    generate_readme(Nav),
+    halt.
+
+generate_nav(NavHtml) :-
+    source_folder(SF),
+    path_segments(SF, SFSG),
+    subnav(SFSG, ".", Nav),
+    member("nav"-NavHtml, Nav).
+
+subnav(Base, Dir, ["name"-Dir, "nav"-Nav]) :-
+    append(Base, [Dir], DirSg),
+    path_segments(RealDir, DirSg),
+    directory_files(RealDir, Files),
+    dirs_only(Files, DirSg, DirsOnly),
+    list_to_ord_set(Files, FilesSet),
+    list_to_ord_set(DirsOnly, DirsOnlySet),
+    ord_subtract(FilesSet, DirsOnlySet, FilesOnly),
+    maplist(subnav(DirSg), DirsOnly, NavDirs),
+    maplist(file_link(RealDir), FilesOnly, FilesLink),
+    render("nav.html", ["files"-FilesLink, "dirs"-NavDirs], Nav).
+
+file_link(Dir, File, ["name"-File, "link"-Link]) :-
+    source_folder(SF),
+    append(SF, Extra, Dir),
+    append(Extra, ['/'|File], Link).
+
+generate_readme(Nav) :-
+    readme_file(ReadmeFile),
+    project_name(ProjectName),
+    output_folder(OutputFolder),
+    path_segments(OutputFolder, OutputFolderSg),
+    append(OutputFolderSg, ["index.html"], OutputFileSg),
+    path_segments(OutputFile, OutputFileSg),
+    phrase_from_file(seq(ReadmeMd), ReadmeFile),
+    markdown(ReadmeMd, ReadmeHtml),
+    render("index.html", [
+	       "project_name"-ProjectName,
+	       "readme"-ReadmeHtml,
+	       "nav"-Nav
+	       ], IndexHtml),
+    phrase_to_file(seq(IndexHtml), OutputFile).
+
+generate_page_docs(Nav) :-
+    source_folder(DocsFolder),
+    output_folder(OutputFolder),    
     make_directory(OutputFolder),
     directory_files(DocsFolder, Files),
     path_segments(DocsFolder, Base),
     path_segments(OutputFolder, Output),
-    maplist(process_file(Base, Output), Files),
-    gen_index(Output, Files),
+    maplist(process_file(Base, Output, Nav), Files),
     copy_css(Output).
 
-process_file(Base, Output0, File0) :-
+process_file(Base, Output0, Nav, File0) :-
     append(Base, [File0], FileSg),
     append(File0, ".html", Output1),
     append(Output0, [Output1], OutputSg),
@@ -32,13 +80,13 @@ process_file(Base, Output0, File0) :-
     read_term(FileStream, Term, []),
     (
 	Term = (:- module(ModuleName, PublicPredicates)) ->
-	document_file(File, Output, ModuleName, PublicPredicates)
+	document_file(File, Output, ModuleName, PublicPredicates, Nav)
     ;   true
     ),
     close(FileStream).
     
 
-process_file(Base0, Output0, Dir0) :-
+process_file(Base0, Output0, Nav, Dir0) :-
     append(Base0, [Dir0], DirSg),
     append(Output0, [Dir0], Output),
     path_segments(Dir, DirSg),
@@ -46,15 +94,21 @@ process_file(Base0, Output0, Dir0) :-
     path_segments(OutputDir, Output),
     make_directory(OutputDir),
     directory_files(Dir, Files),
-    maplist(process_file(DirSg, Output), Files),
-    gen_index(Output, Files).
+    maplist(process_file(DirSg, Output, Nav), Files).
 
-document_file(InputFile, OutputFile, ModuleName, PublicPredicates) :-
+document_file(InputFile, OutputFile, ModuleName, PublicPredicates, Nav) :-
     maplist(document_predicate(InputFile), PublicPredicates, Predicates),
     phrase_from_file(module_description(ModuleDescriptionMd), InputFile),
     markdown(ModuleDescriptionMd, ModuleDescriptionHtml),
     atom_chars(ModuleName, ModuleNameStr),
-    render("page.html", ["module_name"-ModuleNameStr, "module_description"-ModuleDescriptionHtml, "predicates"-Predicates], HtmlOut),
+    project_name(ProjectName),
+    render("page.html", [
+	       "project_name"-ProjectName,
+	       "module_name"-ModuleNameStr,
+	       "module_description"-ModuleDescriptionHtml,
+	       "predicates"-Predicates,
+	       "nav"-Nav
+	   ], HtmlOut),
     open(OutputFile, write, OutputStream),
     format(OutputStream, "~s", [HtmlOut]),
     close(OutputStream).
@@ -164,17 +218,16 @@ commas(N) -->
     }.
     
 
-gen_index(Output, Files) :-
-    append(Output, ["index.html"], OutputIndexSg),
-    path_segments(OutputIndexFile, OutputIndexSg),
-    dirs_only(Files, Output, DirsOnly),
-    list_to_ord_set(Files, FilesSet),
-    list_to_ord_set(DirsOnly, DirsOnlySet),
-    ord_subtract(FilesSet, DirsOnlySet, FilesOnly),
-    open(OutputIndexFile, write, IndexStream),
-    render("index.html", ["files"-FilesOnly, "dirs"-DirsOnly], HtmlIndex),
-    format(IndexStream, "~s", [HtmlIndex]),
-    close(IndexStream).
+    %% append(Output, ["index.html"], OutputIndexSg),
+    %% path_segments(OutputIndexFile, OutputIndexSg),
+    %% dirs_only(Files, Output, DirsOnly),
+    %% list_to_ord_set(Files, FilesSet),
+    %% list_to_ord_set(DirsOnly, DirsOnlySet),
+    %% ord_subtract(FilesSet, DirsOnlySet, FilesOnly),
+    %% open(OutputIndexFile, write, IndexStream),
+    %% render("index.html", ["files"-FilesOnly, "dirs"-DirsOnly], HtmlIndex),
+    %% format(IndexStream, "~s", [HtmlIndex]),
+    %% close(IndexStream).
 
 dirs_only([F|Fs], Output, [F|FOs]) :-
     append(Output, [F], OutputFile),
@@ -211,7 +264,5 @@ copy_css(Output) :-
     path_segments(OutputFile, OutputFileSg),
     setup_call_cleanup(open("doclog.css", read, Stream),(
 	get_n_chars(Stream, _, Css),
-        setup_call_cleanup(open(OutputFile, write, StreamWrite),
-            format(StreamWrite, "~s", [Css]),
-            close(StreamWrite))),
+        phrase_to_file(seq(Css), OutputFile)),
         close(Stream)).

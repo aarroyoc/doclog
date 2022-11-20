@@ -1,8 +1,15 @@
 body {
     font-family: sans-serif;
     margin: 1rem;
-    max-width: 60rem;
+    max-width: 80rem;
 }
+
+.mainContent {
+    display: grid;
+    grid-template-columns: 2fr 5fr;
+    grid-column-gap: 20px;
+}
+
 .moduleDescription {
     margin: 2rem;
 }
@@ -17,4 +24,8 @@ body {
 }
 .predicate > div {
     margin: 0.5rem;
+}
+
+.navlist {
+    list-style-type: none;
 }

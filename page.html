@@ -1,20 +1,29 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Module {{ module_name }} - Scryer Prolog documentation</title>
+    <title>Module {{ module_name }} - {{ project_name }} documentation</title>
     <meta charset="utf-8"/>
-    <link rel="stylesheet" href="doclog.css"/>
+    <link rel="stylesheet" href="/doclog.css"/>
   </head>
   <body>
-    <h1>Module {{ module_name }}</h1>
-    <div class="moduleDescription">{{ module_description }}</div>
-    <div class="predicates">
-      {% for predicate in predicates %}
-      <div class="predicate">
-	<h4>{{ predicate.name }}</h4>
-	<div>{{ predicate.description }}</div>
-      </div>
-      {% endfor %}
+    <h1>{{ project_name }} documentation</h1>
+    <!-- <pre><code>
+	:- use_module(library({{ module_name }})).
+	</code></pre> -->
+    <div class="mainContent">
+      <nav>{{ nav }}</nav>
+      <main>
+	<h2>Module {{ module_name }}</h2>
+        <div class="moduleDescription">{{ module_description }}</div>
+	  <div class="predicates">
+	    {% for predicate in predicates %}
+	    <div class="predicate">
+	      <h4>{{ predicate.name }}</h4>
+	      <div>{{ predicate.description }}</div>
+	    </div>
+	    {% endfor %}
+	  </div>
+      </main>
     </div>
   </body>
 </html>
