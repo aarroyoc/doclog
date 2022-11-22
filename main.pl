@@ -6,6 +6,7 @@
 :- use_module(library(lists)).
 :- use_module(library(pio)).
 :- use_module(library(ordsets)).
+:- use_module(library(time)).
 
 :- use_module('../teruel/teruel').
 :- use_module('../marquete/marquete').
@@ -15,8 +16,10 @@ run(ConfigFile) :-
     atom_chars(ConfigFileA, ConfigFile),
     consult(ConfigFileA),
     generate_nav(Nav),
-    generate_page_docs(Nav),
-    generate_readme(Nav),
+    generate_footer(Footer),
+    Sections = ["nav"-Nav, "footer"-Footer],
+    generate_page_docs(Sections),
+    generate_readme(Sections),
     halt.
 
 generate_nav(NavHtml) :-
@@ -42,7 +45,12 @@ file_link(Dir, File, ["name"-File, "link"-Link]) :-
     append(SF, Extra, Dir),
     append(Extra, ['/'|File], Link).
 
-generate_readme(Nav) :-
+generate_footer(Footer) :-
+    current_time(T),
+    phrase(format_time("%b %d %Y", T), Time),
+    render("footer.html", ["time"-Time], Footer).
+
+generate_readme(Sections) :-
     readme_file(ReadmeFile),
     project_name(ProjectName),
     output_folder(OutputFolder),
@@ -51,24 +59,22 @@ generate_readme(Nav) :-
     path_segments(OutputFile, OutputFileSg),
     phrase_from_file(seq(ReadmeMd), ReadmeFile),
     markdown(ReadmeMd, ReadmeHtml),
-    render("index.html", [
-	       "project_name"-ProjectName,
-	       "readme"-ReadmeHtml,
-	       "nav"-Nav
-	       ], IndexHtml),
+    Vars0 = ["project_name"-ProjectName, "readme"-ReadmeHtml],
+    append(Vars0, Sections, Vars),
+    render("index.html", Vars, IndexHtml),
     phrase_to_file(seq(IndexHtml), OutputFile).
 
-generate_page_docs(Nav) :-
+generate_page_docs(Sections) :-
     source_folder(DocsFolder),
     output_folder(OutputFolder),    
     make_directory(OutputFolder),
     directory_files(DocsFolder, Files),
     path_segments(DocsFolder, Base),
     path_segments(OutputFolder, Output),
-    maplist(process_file(Base, Output, Nav), Files),
+    maplist(process_file(Base, Output, Sections), Files),
     copy_css(Output).
 
-process_file(Base, Output0, Nav, File0) :-
+process_file(Base, Output0, Sections, File0) :-
     append(Base, [File0], FileSg),
     append(File0, ".html", Output1),
     append(Output0, [Output1], OutputSg),
@@ -80,13 +86,13 @@ process_file(Base, Output0, Nav, File0) :-
     read_term(FileStream, Term, []),
     (
 	Term = (:- module(ModuleName, PublicPredicates)) ->
-	document_file(File, Output, ModuleName, PublicPredicates, Nav)
+	document_file(File, Output, ModuleName, PublicPredicates, Sections)
     ;   true
     ),
     close(FileStream).
     
 
-process_file(Base0, Output0, Nav, Dir0) :-
+process_file(Base0, Output0, Sections, Dir0) :-
     append(Base0, [Dir0], DirSg),
     append(Output0, [Dir0], Output),
     path_segments(Dir, DirSg),
@@ -94,21 +100,22 @@ process_file(Base0, Output0, Nav, Dir0) :-
     path_segments(OutputDir, Output),
     make_directory(OutputDir),
     directory_files(Dir, Files),
-    maplist(process_file(DirSg, Output, Nav), Files).
+    maplist(process_file(DirSg, Output, Sections), Files).
 
-document_file(InputFile, OutputFile, ModuleName, PublicPredicates, Nav) :-
+document_file(InputFile, OutputFile, ModuleName, PublicPredicates, Sections) :-
     maplist(document_predicate(InputFile), PublicPredicates, Predicates),
     phrase_from_file(module_description(ModuleDescriptionMd), InputFile),
     markdown(ModuleDescriptionMd, ModuleDescriptionHtml),
     atom_chars(ModuleName, ModuleNameStr),
     project_name(ProjectName),
-    render("page.html", [
-	       "project_name"-ProjectName,
-	       "module_name"-ModuleNameStr,
-	       "module_description"-ModuleDescriptionHtml,
-	       "predicates"-Predicates,
-	       "nav"-Nav
-	   ], HtmlOut),
+    Vars0 = [
+	"project_name"-ProjectName,
+	"module_name"-ModuleNameStr,
+	"module_description"-ModuleDescriptionHtml,
+	"predicates"-Predicates
+    ],
+    append(Vars0, Sections, Vars),
+    render("page.html", Vars, HtmlOut),
     phrase_to_file(seq(HtmlOut), OutputFile).
 
 module_description(X) -->

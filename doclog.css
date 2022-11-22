@@ -29,3 +29,7 @@ body {
 .navlist {
     list-style-type: none;
 }
+
+footer {
+    text-align: center;
+}
