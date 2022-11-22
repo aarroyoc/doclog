@@ -109,9 +109,7 @@ document_file(InputFile, OutputFile, ModuleName, PublicPredicates, Nav) :-
 	       "predicates"-Predicates,
 	       "nav"-Nav
 	   ], HtmlOut),
-    open(OutputFile, write, OutputStream),
-    format(OutputStream, "~s", [HtmlOut]),
-    close(OutputStream).
+    phrase_to_file(seq(HtmlOut), OutputFile).
 
 module_description(X) -->
     ... ,
@@ -216,18 +214,6 @@ commas(N) -->
     {
 	N is N0 + 1
     }.
-    
-
-    %% append(Output, ["index.html"], OutputIndexSg),
-    %% path_segments(OutputIndexFile, OutputIndexSg),
-    %% dirs_only(Files, Output, DirsOnly),
-    %% list_to_ord_set(Files, FilesSet),
-    %% list_to_ord_set(DirsOnly, DirsOnlySet),
-    %% ord_subtract(FilesSet, DirsOnlySet, FilesOnly),
-    %% open(OutputIndexFile, write, IndexStream),
-    %% render("index.html", ["files"-FilesOnly, "dirs"-DirsOnly], HtmlIndex),
-    %% format(IndexStream, "~s", [HtmlIndex]),
-    %% close(IndexStream).
 
 dirs_only([F|Fs], Output, [F|FOs]) :-
     append(Output, [F], OutputFile),
