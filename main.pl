@@ -22,6 +22,10 @@ run(ConfigFile) :-
     generate_readme(Sections),
     halt.
 
+run(_) :-
+    portray_clause(error_running_doclog),
+    halt(1).
+
 generate_nav(NavHtml) :-
     source_folder(SF),
     path_segments(SF, SFSG),
