@@ -14,7 +14,12 @@
       <nav>{{ nav }}</nav>
       <main>
 	<h2>Module {{ module_name }}</h2>
+	<pre><code>:- use_module(library({{ library }})).</code></pre>
         <div class="moduleDescription">{{ module_description }}</div>
+	<div class="source">
+	  <a href="{{ websource }}">Browse source code</a>
+	</div>
+	
 	  <div class="predicates">
 	    {% for predicate in predicates %}
 	    <div class="predicate">

@@ -112,11 +112,18 @@ document_file(InputFile, OutputFile, ModuleName, PublicPredicates, Sections) :-
     markdown(ModuleDescriptionMd, ModuleDescriptionHtml),
     atom_chars(ModuleName, ModuleNameStr),
     project_name(ProjectName),
+    source_folder(SF),
+    websource(WebSourceBase),
+    append(SF, ExtraFile, InputFile),
+    append(['/'|LibraryUse], ".pl", ExtraFile),
+    append(WebSourceBase, ExtraFile, WebSource),
     Vars0 = [
 	"project_name"-ProjectName,
 	"module_name"-ModuleNameStr,
 	"module_description"-ModuleDescriptionHtml,
-	"predicates"-Predicates
+	"predicates"-Predicates,
+	"websource"-WebSource,
+	"library"-LibraryUse
     ],
     append(Vars0, Sections, Vars),
     render("page.html", Vars, HtmlOut),
