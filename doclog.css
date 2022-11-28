@@ -33,3 +33,9 @@ body {
 footer {
     text-align: center;
 }
+
+.topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}

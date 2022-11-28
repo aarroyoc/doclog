@@ -18,11 +18,12 @@ MORE COMMENT
 */
 ```
 
-Predicate comments start with %! and they're followed by N % comments. You should indicate in the first line, the name of the predicate, var names and modes. Then you can use Markdown to explain the rest of the predicate.
+Predicate comments start with %% and they're followed by N % comments. Of those lines, the first line comment should be empty. You should indicate in the first line, the name of the predicate, var names and modes. Then you can use Markdown to explain the rest of the predicate.
 
 ```
-%! append(L0, L1, L)
-%  L is L0 and L1 appended together
+%% append(L0, L1, L)
+%
+% L is L0 and L1 appended together
 ```
 
 ## Using Doclog

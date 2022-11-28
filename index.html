@@ -6,11 +6,17 @@
     <link rel="stylesheet" href="/doclog.css"/>
   </head>
   <body>
-    <h1>{{ project_name }} documentation</h1>
+    <div class="topbar">
+      <h1>{{ project_name }} documentation</h1>
+      <input list="predicates" type="search" placeholder="Search..." id="search">
+      <datalist id="predicates"></datalist>
+    </div>
+    
     <div class="mainContent">
       <nav>{{ nav }}</nav>
       <main>{{ readme }}</main>
     </div>
     {{ footer }}
+    <script src="/doclog.js" async defer></script>
   </body>
 </html>

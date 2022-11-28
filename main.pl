@@ -75,10 +75,17 @@ generate_page_docs(Sections) :-
     directory_files(DocsFolder, Files),
     path_segments(DocsFolder, Base),
     path_segments(OutputFolder, Output),
-    maplist(process_file(Base, Output, Sections), Files),
-    copy_css(Output).
+    append(Output, ["search-index.json"], SearchIndexSg),
+    path_segments(SearchIndex, SearchIndexSg),
+    setup_call_cleanup(open(SearchIndex, write, SearchWriteStream),(
+	format(SearchWriteStream, "[", []),
+        maplist(process_file(Base, Output, Sections, SearchWriteStream), Files),
+	format(SearchWriteStream, "{}]", [])
+    ), close(SearchWriteStream)),	
+    copy_file("doclog.css", Output),
+    copy_file("doclog.js", Output).
 
-process_file(Base, Output0, Sections, File0) :-
+process_file(Base, Output0, Sections, SearchWriteStream, File0) :-
     append(Base, [File0], FileSg),
     append(File0, ".html", Output1),
     append(Output0, [Output1], OutputSg),
@@ -90,13 +97,16 @@ process_file(Base, Output0, Sections, File0) :-
     read_term(FileStream, Term, []),
     (
 	Term = (:- module(ModuleName, PublicPredicates)) ->
-	document_file(File, Output, ModuleName, PublicPredicates, Sections)
+	(
+	    document_file(File, Output, ModuleName, PublicPredicates, Sections),
+	    append_predicates_search_index(Output, PublicPredicates, SearchWriteStream)
+	)
     ;   true
     ),
     close(FileStream).
     
 
-process_file(Base0, Output0, Sections, Dir0) :-
+process_file(Base0, Output0, Sections, SearchWriteStream, Dir0) :-
     append(Base0, [Dir0], DirSg),
     append(Output0, [Dir0], Output),
     path_segments(Dir, DirSg),
@@ -104,7 +114,39 @@ process_file(Base0, Output0, Sections, Dir0) :-
     path_segments(OutputDir, Output),
     make_directory(OutputDir),
     directory_files(Dir, Files),
-    maplist(process_file(DirSg, Output, Sections), Files).
+    maplist(process_file(DirSg, Output, Sections, SearchWriteStream), Files).
+
+append_predicates_search_index(Output, PublicPredicates, SearchWriteStream) :-
+    output_folder(OF),
+    append(OF, Relative, Output),
+    maplist(append_search_index(Relative, SearchWriteStream), PublicPredicates).
+
+append_search_index(Output, SearchWriteStream, PredicateName/PredicateArity) :-
+    atom_chars(PredicateName, NameUnsafe),
+    phrase(escape_js(Name), NameUnsafe),
+    format(SearchWriteStream, "{\"link\": \"~s\", \"predicate\": \"~s/~d\"},", [Output, Name, PredicateArity]).
+
+append_search_index(Output, SearchWriteStream, PredicateName//PredicateArity) :-
+    atom_chars(PredicateName, NameUnsafe),
+    phrase(escape_js(Name), NameUnsafe),    
+    format(SearchWriteStream, "{\"link\": \"~s\", \"predicate\": \"~s//~d\"},", [Output, Name, PredicateArity]).
+
+append_search_index(Output, SearchWriteStream, op(_,_,Operator)) :-
+    atom_chars(Operator, NameUnsafe),
+    phrase(escape_js(Name), NameUnsafe),    
+    format(SearchWriteStream, "{\"link\": \"~s\", \"predicate\": \"~s\"},", [Output, Name]).
+
+escape_js([]) --> [].
+escape_js([X|Xs]) -->
+    [X],
+    {
+	X \= (\)
+    },
+    escape_js(Xs).
+escape_js(Xs) -->
+    "\\",
+    escape_js(Xs0),
+    { append("\\\\", Xs0, Xs) }.
 
 document_file(InputFile, OutputFile, ModuleName, PublicPredicates, Sections) :-
     maplist(document_predicate(InputFile), PublicPredicates, Predicates),
@@ -156,7 +198,7 @@ document_predicate(PredicateName/PredicateArity, ["name"-Name, "description"-Des
     Description = "".
 
 document_predicate(PredicateName//PredicateArity, ["name"-Name, "description"-Description]) :-
-    phrase(format_("~a/~d", [PredicateName, PredicateArity]), Name),    
+    phrase(format_("~a//~d", [PredicateName, PredicateArity]), Name),    
     Description = "".
 
 document_predicate(op(_,_,Operator), ["name"-Name, "description"-Description]) :-
@@ -165,7 +207,7 @@ document_predicate(op(_,_,Operator), ["name"-Name, "description"-Description]) :
 
 predicate_documentation(Predicate, Name, Description) -->
     ... ,
-    "%!  ",
+    "%% ",
     predicate_name(Predicate, Name),
     "\n%", whites, "\n",
     predicate_description(Description),
@@ -200,7 +242,7 @@ predicate_name(PredicateName/Arity, Name) -->
     }.
 
 predicate_description(Description) -->
-    "%   ", seq(Line), "\n",
+    "% ", seq(Line), "\n",
     predicate_description(Description0),
     {
 	append(Line, ['\n'|Description0], Description)
@@ -263,10 +305,10 @@ string_without([], Block) -->
 string_without([], _) -->
     [].
 
-copy_css(Output) :-
-    append(Output, ["doclog.css"], OutputFileSg),
+copy_file(File, Output) :-
+    append(Output, [File], OutputFileSg),
     path_segments(OutputFile, OutputFileSg),
-    setup_call_cleanup(open("doclog.css", read, Stream),(
+    setup_call_cleanup(open(File, read, Stream),(
 	get_n_chars(Stream, _, Css),
         phrase_to_file(seq(Css), OutputFile)),
         close(Stream)).
