@@ -98,8 +98,9 @@ process_file(Base, Output0, Sections, SearchWriteStream, File0) :-
     (
 	Term = (:- module(ModuleName, PublicPredicates)) ->
 	(
-	    document_file(File, Output, ModuleName, PublicPredicates, Sections),
-	    append_predicates_search_index(Output, PublicPredicates, SearchWriteStream)
+	    predicates_clean(PublicPredicates, PublicPredicates1),
+	    document_file(File, Output, ModuleName, PublicPredicates1, Sections),
+	    append_predicates_search_index(Output, PublicPredicates1, SearchWriteStream)
 	)
     ;   true
     ),
@@ -115,6 +116,15 @@ process_file(Base0, Output0, Sections, SearchWriteStream, Dir0) :-
     make_directory(OutputDir),
     directory_files(Dir, Files),
     maplist(process_file(DirSg, Output, Sections, SearchWriteStream), Files).
+
+predicates_clean([], []).
+predicates_clean([X|Xs], [X|Ys]) :-
+    X \= op(_,_,_),
+    predicates_clean(Xs, Ys).
+predicates_clean([X|Xs], Ys) :-
+    X = op(_,_,_),
+    predicates_clean(Xs, Ys).
+    
 
 append_predicates_search_index(Output, PublicPredicates, SearchWriteStream) :-
     output_folder(OF),
@@ -201,10 +211,6 @@ document_predicate(PredicateName//PredicateArity, ["name"-Name, "description"-De
     phrase(format_("~a//~d", [PredicateName, PredicateArity]), Name),    
     Description = "".
 
-document_predicate(op(_,_,Operator), ["name"-Name, "description"-Description]) :-
-    atom_chars(Operator, Name),
-    Description = "".
-
 predicate_documentation(Predicate, Name, Description) -->
     ... ,
     "%% ",
@@ -240,6 +246,7 @@ predicate_name(PredicateName/Arity, Name) -->
     {
 	phrase((NameCs,"(",seq(Args),")",seq(RestCs)), Name)
     }.
+    
 
 predicate_description(Description) -->
     "% ", seq(Line), "\n",

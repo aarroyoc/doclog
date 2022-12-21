@@ -2,6 +2,7 @@ body {
     font-family: sans-serif;
     margin: 1rem;
     max-width: 80rem;
+    margin-top: auto;
 }
 
 .mainContent {
@@ -19,8 +20,9 @@ body {
 }
 
 .predicate > h4 {
-    background-color: blue;
+    background-color: #00007f;
     color: white;
+    padding-left: 10px;
 }
 .predicate > div {
     margin: 0.5rem;
@@ -38,4 +40,10 @@ footer {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    border-bottom: solid #00007f 10px;
+}
+
+.topbarLink {
+    text-decoration: none;
+    color: black;
 }
