@@ -14,6 +14,7 @@ upload:
 setup:
 	git clone --depth 1 --branch v1.0.1 https://github.com/aarroyoc/teruel
 	git clone --depth 1 --branch v1.0.2 https://github.com/aarroyoc/marquete
+	git clone --depth 1 --branch v0.1.3 https://github.com/aarroyoc/djota
 
 .PHONY: test
 test:

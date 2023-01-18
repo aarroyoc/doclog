@@ -10,6 +10,7 @@
 
 :- use_module('teruel/teruel').
 :- use_module('marquete/marquete').
+:- use_module('djota/djota').
 
 run(ConfigFile) :-
     portray_clause(doclog(1, 0, 0)),    
@@ -161,7 +162,7 @@ escape_js(Xs) -->
 document_file(InputFile, OutputFile, ModuleName, PublicPredicates, Sections) :-
     maplist(document_predicate(InputFile), PublicPredicates, Predicates),
     phrase_from_file(module_description(ModuleDescriptionMd), InputFile),
-    markdown(ModuleDescriptionMd, ModuleDescriptionHtml),
+    djot(ModuleDescriptionMd, ModuleDescriptionHtml),
     atom_chars(ModuleName, ModuleNameStr),
     project_name(ProjectName),
     source_folder(SF),
@@ -198,7 +199,7 @@ document_predicate(InputFile, Predicate, ["name"-Name, "description"-Description
     (
 	(
 	    phrase_from_file(predicate_documentation(Predicate, Name, DescriptionMd), InputFile),
-	    markdown(DescriptionMd, Description)
+	    djot(DescriptionMd, Description)
 	)
     ;	document_predicate(Predicate, ["name"-Name, "description"-Description])
     ).
