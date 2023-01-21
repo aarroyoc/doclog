@@ -47,3 +47,22 @@ footer {
     text-decoration: none;
     color: black;
 }
+
+table {
+    border: 2px solid #00007F;
+    border-radius: 0.25rem;
+    border-collapse: collapse;
+}
+
+tbody tr:nth-child(odd) {
+  background-color: #DFDFFF;
+}
+
+tbody tr:nth-child(even) {
+  background-color: #EFEFFF;
+}
+
+td {
+    padding-left: 10px;
+    padding-right: 10px;
+}
