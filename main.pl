@@ -8,9 +8,9 @@
 :- use_module(library(ordsets)).
 :- use_module(library(time)).
 
-:- use_module('teruel/teruel').
-:- use_module('marquete/marquete').
-:- use_module('djota/djota').
+:- use_module(teruel/teruel).
+:- use_module(marquete/marquete).
+:- use_module(djota/djota).
 
 run(ConfigFile) :-
     portray_clause(doclog(1, 0, 0)),    
