@@ -247,6 +247,34 @@ predicate_name(PredicateName/Arity, Name) -->
     {
 	phrase((NameCs,"(",seq(Args),")",seq(RestCs)), Name)
     }.
+
+predicate_name(PredicateName//0, Name) -->
+    {
+	atom_chars(PredicateName, NameCs)
+    },
+    NameCs,"//",
+    seq(RestCs),
+    {
+	phrase((NameCs, RestCs, "//"), Name)
+    }.
+
+predicate_name(PredicateName//Arity, Name) -->
+    {
+	atom_chars(PredicateName, NameCs)
+    },
+    NameCs,
+    "(",
+    seq(Args),
+    ")//",
+    !,
+    {
+	Commas is Arity - 1,
+	phrase(commas(Commas), Args)
+    },
+    seq(RestCs),
+    {
+	phrase((NameCs,"(",seq(Args),")//",seq(RestCs)), Name)
+    }.
     
 
 predicate_description(Description) -->
