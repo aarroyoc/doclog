@@ -63,7 +63,7 @@ generate_readme(Sections) :-
     append(OutputFolderSg, ["index.html"], OutputFileSg),
     path_segments(OutputFile, OutputFileSg),
     phrase_from_file(seq(ReadmeMd), ReadmeFile),
-    markdown(ReadmeMd, ReadmeHtml),
+    djot(ReadmeMd, ReadmeHtml),
     Vars0 = ["project_name"-ProjectName, "readme"-ReadmeHtml],
     append(Vars0, Sections, Vars),
     render("index.html", Vars, IndexHtml),

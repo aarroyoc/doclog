@@ -1,6 +1,7 @@
 .PHONY: gen-docs-scryer
 gen-docs-scryer:
 	bash doclog.sh scryer.config.pl
+	cp /home/aarroyoc/dev/scryer-prolog/logo/scryer.png output/scryer.png
 
 .PHONY: clean
 clean:
