@@ -33,22 +33,21 @@ generate_nav(NavHtml) :-
     subnav(SFSG, ".", Nav),
     member("nav"-NavHtml, Nav).
 
-subnav(Base, Dir, ["name"-Dir, "nav"-Nav]) :-
+subnav(Base, Dir, ["name"-Dir, "nav"-Nav, "type"-"dir"]) :-
     append(Base, [Dir], DirSg),
     path_segments(RealDir, DirSg),
+    directory_exists(RealDir),
     directory_files(RealDir, Files),
-    dirs_only(Files, DirSg, DirsOnly),
-    list_to_ord_set(Files, FilesSet),
-    list_to_ord_set(DirsOnly, DirsOnlySet),
-    ord_subtract(FilesSet, DirsOnlySet, FilesOnly),
-    maplist(subnav(DirSg), DirsOnly, NavDirs),
-    maplist(file_link(RealDir), FilesOnly, FilesLink),
-    render("nav.html", ["files"-FilesLink, "dirs"-NavDirs], Nav).
+    sort(Files, FilesSorted),
+    maplist(subnav(DirSg), FilesSorted, Items),
+    render("nav.html", ["items"-Items], Nav).
 
-file_link(Dir, File, ["name"-File, "link"-Link]) :-
-    source_folder(SF),
-    append(SF, Extra, Dir),
-    append(Extra, ['/'|File], Link).
+subnav(Base, File, ["name"-File, "link"-['/'|Link], "type"-"file"]) :-
+    append(Base, [File], FileSg),
+    path_segments(FilePath, FileSg),
+    file_exists(FilePath),
+    append(_, ["."|LinkSg], FileSg),
+    path_segments(Link, LinkSg).
 
 generate_footer(Footer) :-
     current_time(T),
