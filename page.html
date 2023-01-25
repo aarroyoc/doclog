@@ -12,7 +12,10 @@
       <datalist id="predicates"></datalist>      
     </div>
     <div class="mainContent">
-      <nav>{{ nav }}</nav>
+      <nav>
+	<h4>Libraries</h4>
+	{{ nav }}
+      </nav>
       <main>
 	<h2>Module {{ module_name }}</h2>
 	<pre><code>:- use_module(library({{ library }})).</code></pre>

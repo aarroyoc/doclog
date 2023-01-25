@@ -32,6 +32,10 @@ body {
     list-style-type: none;
 }
 
+.mainContent > nav > h4 {
+    padding-left: 1.5rem;
+}
+
 footer {
     text-align: center;
 }

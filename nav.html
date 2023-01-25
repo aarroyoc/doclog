@@ -3,7 +3,7 @@
     {% if item.type == "dir" %}
     <li><details><summary>{{ item.name }}/</summary>{{ item.nav }}</details></li>
     {% else %}
-    <li><a href="{{ item.link }}.html">{{ item.name }}</a></li>
+    <li><a href="{{ item.link }}">{{ item.name }}</a></li>
     {% endif %}
   {% endfor %}
 </ul>

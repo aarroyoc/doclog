@@ -42,12 +42,15 @@ subnav(Base, Dir, ["name"-Dir, "nav"-Nav, "type"-"dir"]) :-
     maplist(subnav(DirSg), FilesSorted, Items),
     render("nav.html", ["items"-Items], Nav).
 
-subnav(Base, File, ["name"-File, "link"-['/'|Link], "type"-"file"]) :-
+subnav(Base, File, ["name"-Name, "link"-['/'|Link], "type"-"file"]) :-
     append(Base, [File], FileSg),
+    append(Name, ".pl", File),
     path_segments(FilePath, FileSg),
     file_exists(FilePath),
     append(_, ["."|LinkSg], FileSg),
-    path_segments(Link, LinkSg).
+    path_segments(Link0, LinkSg),
+    append(Link1, ".pl", Link0),
+    append(Link1, ".html", Link).
 
 generate_footer(Footer) :-
     current_time(T),
@@ -87,7 +90,8 @@ generate_page_docs(Sections) :-
 
 process_file(Base, Output0, Sections, SearchWriteStream, File0) :-
     append(Base, [File0], FileSg),
-    append(File0, ".html", Output1),
+    append(File1, ".pl", File0),
+    append(File1, ".html", Output1),
     append(Output0, [Output1], OutputSg),
     path_segments(Output, OutputSg),
     path_segments(File, FileSg),
