@@ -9,7 +9,6 @@
 :- use_module(library(time)).
 
 :- use_module(teruel/teruel).
-:- use_module(marquete/marquete).
 :- use_module(djota/djota).
 
 run(ConfigFile) :-
