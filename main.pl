@@ -32,12 +32,13 @@ generate_nav(NavHtml) :-
     subnav(SFSG, ".", Nav),
     member("nav"-NavHtml, Nav).
 
-subnav(Base, Dir, ["name"-Dir, "nav"-Nav, "type"-"dir"]) :-
+subnav(Base, Dir, ["name"-Dir, "nav"-Nav, "type"-"dir"]) :-    
     append(Base, [Dir], DirSg),
     path_segments(RealDir, DirSg),
     directory_exists(RealDir),
     directory_files(RealDir, Files),
-    sort(Files, FilesSorted),
+    files_not_omitted_files(RealDir, Files, FilesReal),
+    sort(FilesReal, FilesSorted),
     maplist(subnav(DirSg), FilesSorted, Items),
     render("nav.html", ["items"-Items], Nav).
 
@@ -50,6 +51,24 @@ subnav(Base, File, ["name"-Name, "link"-['/'|Link], "type"-"file"]) :-
     path_segments(Link0, LinkSg),
     append(Link1, ".pl", Link0),
     append(Link1, ".html", Link).
+
+files_not_omitted_files(_, [], []).
+files_not_omitted_files(Base, [X|Xs], Ys) :-
+    source_folder(SF),
+    findall(FullOmitFile,(
+		omit(Omit),
+		member(OmitFile, Omit),
+		append(SF, ['/', '.', '/'|OmitFile], FullOmitFile)
+	    ), OmitFiles),
+    append(Base, ['/'|X], File),
+    portray_clause(File),
+    portray_clause(OmitFiles),
+    (
+	member(File, OmitFiles) ->
+	Ys = Ys0
+    ;   Ys = [X|Ys0]
+    ),
+    files_not_omitted_files(Base, Xs, Ys0).
 
 generate_footer(Footer) :-
     current_time(T),
