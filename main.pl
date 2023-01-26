@@ -61,8 +61,6 @@ files_not_omitted_files(Base, [X|Xs], Ys) :-
 		append(SF, ['/', '.', '/'|OmitFile], FullOmitFile)
 	    ), OmitFiles),
     append(Base, ['/'|X], File),
-    portray_clause(File),
-    portray_clause(OmitFiles),
     (
 	member(File, OmitFiles) ->
 	Ys = Ys0
