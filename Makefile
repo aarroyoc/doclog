@@ -14,7 +14,7 @@ upload:
 .PHONY: setup
 setup:
 	git clone --depth 1 --branch v1.0.1 https://github.com/aarroyoc/teruel
-	git clone --depth 1 --branch v0.3.0 https://github.com/aarroyoc/djota
+	git clone --depth 1 --branch v0.3.1 https://github.com/aarroyoc/djota
 
 .PHONY: test
 test:
