@@ -118,8 +118,8 @@ process_file(Base, Output0, Sections, SearchWriteStream, File0) :-
     (
 	Term = (:- module(ModuleName, PublicPredicates)) ->
 	(
-	    predicates_clean(PublicPredicates, PublicPredicates1, _Ops),
-	    document_file(File, Output, ModuleName, PublicPredicates1, Sections),
+	    predicates_clean(PublicPredicates, PublicPredicates1, Ops),
+	    document_file(File, Output, ModuleName, PublicPredicates1, Ops, Sections),
 	    append_predicates_search_index(Output, PublicPredicates1, SearchWriteStream)
 	)
     ;   true
@@ -178,8 +178,8 @@ escape_js(Xs) -->
     escape_js(Xs0),
     { append("\\\\", Xs0, Xs) }.
 
-document_file(InputFile, OutputFile, ModuleName, PublicPredicates, Sections) :-
-    maplist(document_predicate(InputFile), PublicPredicates, Predicates),
+document_file(InputFile, OutputFile, ModuleName, PublicPredicates, Ops, Sections) :-
+    maplist(document_predicate(InputFile, Ops), PublicPredicates, Predicates),
     phrase_from_file(module_description(ModuleDescriptionMd), InputFile),
     djot(ModuleDescriptionMd, ModuleDescriptionHtml),
     atom_chars(ModuleName, ModuleNameStr),
@@ -213,18 +213,31 @@ module_description("No description") -->
 
 
 % First try to extract description based on name and arity, if not, fallback to extremely simple description
-document_predicate(InputFile, Predicate, ["name"-Name, "description"-Description]) :-
+document_predicate(InputFile, Ops, Predicate, ["name"-Name, "description"-Description]) :-
     portray_clause(documenting(Predicate)),
     (
 	(
 	    phrase_from_file(predicate_documentation(Predicate, Name, DescriptionMd), InputFile),
 	    djot(DescriptionMd, Description)
 	)
-    ;	document_predicate(Predicate, ["name"-Name, "description"-Description])
+    ;	document_predicate(Predicate, Ops, ["name"-Name, "description"-Description])
     ).
 
-document_predicate(Predicate, ["name"-Name, "description"-Description]) :-
-    write_term_to_chars(Predicate, [], Name),
+document_predicate(Predicate, Ops, ["name"-Name, "description"-Description]) :-
+    Predicate = PN/PA,
+    member(op(_, _, PN), Ops),
+    phrase(format_("(~a)/~d", [PN, PA]), Name),
+    Description = "".
+
+document_predicate(Predicate, Ops, ["name"-Name, "description"-Description]) :-
+    Predicate = PN/_PA,
+    \+ member(op(_, _, PN), Ops),
+    phrase(format_("~q", [Predicate]), Name),
+    Description = "".
+
+document_predicate(Predicate, Ops, ["name"-Name, "description"-Description]) :-
+    Predicate = _PN//_PA,
+    phrase(format_("~q", [Predicate]), Name),
     Description = "".
 
 predicate_documentation(Predicate, Name, Description) -->
