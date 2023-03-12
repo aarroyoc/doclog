@@ -1,7 +1,7 @@
 <ul class="navlist">
   {% for item in items %}
     {% if item.type == "dir" %}
-    <li><details><summary>{{ item.name }}/</summary>{{ item.nav }}</details></li>
+    <li><details open><summary>{{ item.name }}/</summary>{{ item.nav }}</details></li>
     {% else %}
     <li><a href="{{ item.link }}">{{ item.name }}</a></li>
     {% endif %}
