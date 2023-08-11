@@ -1,5 +1,5 @@
 project_name("Scryer Prolog").
-readme_file("scryer-prolog/README.dj").
+readme_file("scryer-prolog/INDEX.dj").
 source_folder("scryer-prolog/src/lib").
 output_folder("output").
 websource("https://github.com/mthom/scryer-prolog/tree/master/src/lib").
