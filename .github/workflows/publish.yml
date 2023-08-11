@@ -1,0 +1,41 @@
+name: Publish
+on:
+  schedule:
+    - cron: '33 3 * * *'
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Install Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          profile: minimal
+          components: cargo
+      - name: Install Netlify CLI
+        run: npm install -g netlify-cli@16.0.2
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Checkout Scryer Prolog
+        uses: actions/checkout@v3
+        with:
+          repository: mthom/scryer-prolog
+          path: scryer-prolog
+      - name: Compile Scryer Prolog
+        run: cargo build --release
+        working-directory: scryer-prolog
+      - name: Install Scryer Prolog
+        run: sudo cp scryer-prolog/target/release/scryer-prolog /usr/bin/scryer-prolog
+      - name: Install Dependencies
+        run: make setup
+      - name: Generate docs for https://www.scryer.pl
+        run: bash doclog.sh scryer-test.config.pl
+      - name: Copy image
+        run: cp scryer-prolog/logo/scryer.png output/scryer.png
+      - name: Upload site
+        run: netlify deploy --prod --dir=output
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
