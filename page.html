@@ -26,7 +26,7 @@
 	
 	  <div class="predicates">
 	    {% for predicate in predicates %}
-	    <div class="predicate">
+        <div class="predicate" id="{{ predicate.predicate }}">
 	      <h4>{{ predicate.name }}</h4>
 	      <div>{{ predicate.description }}</div>
 	    </div>
