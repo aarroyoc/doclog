@@ -120,7 +120,7 @@ process_file(Base, Output0, Sections, SearchWriteStream, File0) :-
 	(
 	    predicates_clean(PublicPredicates, PublicPredicates1, Ops),
 	    document_file(File, Output, ModuleName, PublicPredicates1, Ops, Sections),
-	    append_predicates_search_index(Output, PublicPredicates1, SearchWriteStream)
+	    append_predicates_search_index(Output, PublicPredicates1, Ops, SearchWriteStream)
 	)
     ;   true
     ),
@@ -146,24 +146,19 @@ predicates_clean([X|Xs], Ys, [X|Ops]) :-
     predicates_clean(Xs, Ys, Ops).
     
 
-append_predicates_search_index(Output, PublicPredicates, SearchWriteStream) :-
+append_predicates_search_index(Output, PublicPredicates, Ops, SearchWriteStream) :-
     output_folder(OF),
     append(OF, Relative, Output),
-    maplist(append_search_index(Relative, SearchWriteStream), PublicPredicates).
+    maplist(append_search_index(Relative, SearchWriteStream, Ops), PublicPredicates).
 
-append_search_index(Output, SearchWriteStream, PredicateName/PredicateArity) :-
-    atom_chars(PredicateName, NameUnsafe),
-    phrase(escape_js(Name), NameUnsafe),
-    format(SearchWriteStream, "{\"link\": \"~s\", \"predicate\": \"~s/~d\"},", [Output, Name, PredicateArity]).
-
-append_search_index(Output, SearchWriteStream, PredicateName//PredicateArity) :-
-    atom_chars(PredicateName, NameUnsafe),
-    phrase(escape_js(Name), NameUnsafe),    
-    format(SearchWriteStream, "{\"link\": \"~s\", \"predicate\": \"~s//~d\"},", [Output, Name, PredicateArity]).
+append_search_index(Output, SearchWriteStream, Ops, Predicate) :-
+    predicate_string(Predicate, Ops, PredicateString),
+    phrase(escape_js(PredicateStringSafe), PredicateString),
+    format(SearchWriteStream, "{\"link\": \"~s#~s\", \"predicate\": \"~s\"},", [Output, PredicateStringSafe, PredicateStringSafe]).
 
 append_search_index(Output, SearchWriteStream, op(_,_,Operator)) :-
     atom_chars(Operator, NameUnsafe),
-    phrase(escape_js(Name), NameUnsafe),    
+    phrase(escape_js(Name), NameUnsafe),
     format(SearchWriteStream, "{\"link\": \"~s\", \"predicate\": \"~s\"},", [Output, Name]).
 
 escape_js([]) --> [].
@@ -211,10 +206,24 @@ module_description(X) -->
 module_description("No description") -->
     ... .
 
+predicate_string(Predicate, Ops, PredicateString) :-
+    Predicate = PN/PA,
+    member(op(_, _, PN), Ops),
+    phrase(format_("(~a)/~d", [PN, PA]), PredicateString).
+
+predicate_string(Predicate, Ops, PredicateString) :-
+    Predicate = PN/_PA,
+    \+ member(op(_, _, PN), Ops),
+    phrase(format_("~q", [Predicate]), PredicateString).
+
+predicate_string(Predicate, Ops, PredicateString) :-
+    Predicate = _PN//_PA,
+    phrase(format_("~q", [Predicate]), PredicateString).
 
 % First try to extract description based on name and arity, if not, fallback to extremely simple description
-document_predicate(InputFile, Ops, Predicate, ["name"-Name, "description"-Description]) :-
+document_predicate(InputFile, Ops, Predicate, ["predicate"-PredicateString, "name"-Name, "description"-Description]) :-
     portray_clause(documenting(Predicate)),
+    predicate_string(Predicate, Ops, PredicateString),
     (
 	(
 	    phrase_from_file(predicate_documentation(Predicate, Name, DescriptionMd), InputFile),
@@ -224,20 +233,7 @@ document_predicate(InputFile, Ops, Predicate, ["name"-Name, "description"-Descri
     ).
 
 document_predicate(Predicate, Ops, ["name"-Name, "description"-Description]) :-
-    Predicate = PN/PA,
-    member(op(_, _, PN), Ops),
-    phrase(format_("(~a)/~d", [PN, PA]), Name),
-    Description = "".
-
-document_predicate(Predicate, Ops, ["name"-Name, "description"-Description]) :-
-    Predicate = PN/_PA,
-    \+ member(op(_, _, PN), Ops),
-    phrase(format_("~q", [Predicate]), Name),
-    Description = "".
-
-document_predicate(Predicate, Ops, ["name"-Name, "description"-Description]) :-
-    Predicate = _PN//_PA,
-    phrase(format_("~q", [Predicate]), Name),
+    predicate_string(Predicate, Ops, Name),
     Description = "".
 
 predicate_documentation(Predicate, Name, Description) -->
