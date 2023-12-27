@@ -8,12 +8,6 @@ jobs:
   test:
     runs-on: ubuntu-22.04
     steps:
-      - name: Install Rust
-        uses: actions-rs/toolchain@v1
-        with:
-          toolchain: stable
-          profile: minimal
-          components: cargo
       - name: Install Netlify CLI
         run: npm install -g netlify-cli@16.0.2
       - name: Checkout
