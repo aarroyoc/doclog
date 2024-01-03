@@ -7,12 +7,14 @@
 :- use_module(library(pio)).
 :- use_module(library(ordsets)).
 :- use_module(library(time)).
+:- use_module(library(clpz)).
+:- use_module(library(debug)).
 
 :- use_module(teruel/teruel).
 :- use_module(djota/djota).
 
 run(ConfigFile) :-
-    portray_clause(doclog(1, 0, 0)),    
+    portray_clause(doclog(1, 1, 0)),    
     atom_chars(ConfigFileA, ConfigFile),
     consult(ConfigFileA),
     generate_nav(Nav),
@@ -173,9 +175,16 @@ escape_js(Xs) -->
     escape_js(Xs0),
     { append("\\\\", Xs0, Xs) }.
 
+% let's try to document every text comment we see
+% Later, we'll add public predicates that have no documentation
 document_file(InputFile, OutputFile, ModuleName, PublicPredicates, Ops, Sections) :-
-    maplist(document_predicate(InputFile, Ops), PublicPredicates, Predicates),
-    phrase_from_file(module_description(ModuleDescriptionMd), InputFile),
+    phrase_from_file(seq(FileText), InputFile),
+    phrase(documented_predicates(Predicates0, Ops), FileText),
+    public_undocumented_predicates(Predicates0, Ops, PublicPredicates, PublicUndocumented),
+    portray_clause(undocumented_public_predicates(PublicUndocumented)),
+    maplist(document_predicate(Ops), PublicUndocumented, Predicates1),
+    append(Predicates0, Predicates1, Predicates),
+    phrase(module_description(ModuleDescriptionMd), FileText),
     djot(ModuleDescriptionMd, ModuleDescriptionHtml),
     atom_chars(ModuleName, ModuleNameStr),
     project_name(ProjectName),
@@ -195,6 +204,21 @@ document_file(InputFile, OutputFile, ModuleName, PublicPredicates, Ops, Sections
     append(Vars0, Sections, Vars),
     render("page.html", Vars, HtmlOut),
     phrase_to_file(seq(HtmlOut), OutputFile).
+
+documented_predicates([], _) --> "".
+documented_predicates([PredicateVars|Ps], Ops) -->
+    predicate_documentation(Predicate, Name, DescriptionDjot),!,
+    {
+	predicate_string(Predicate, Ops, PredicateString),
+	portray_clause(documenting(PredicateString)),
+	djot(DescriptionDjot, Description),
+	PredicateVars = ["predicate"-PredicateString, "name"-Name, "description"-Description]
+    },
+    documented_predicates(Ps, Ops).
+
+documented_predicates(Ps, Ops) -->
+    ... , "\n",
+    documented_predicates(Ps, Ops).
 
 module_description(X) -->
     ... ,
@@ -216,90 +240,80 @@ predicate_string(Predicate, Ops, PredicateString) :-
     \+ member(op(_, _, PN), Ops),
     phrase(format_("~q", [Predicate]), PredicateString).
 
-predicate_string(Predicate, Ops, PredicateString) :-
+predicate_string(Predicate, _Ops, PredicateString) :-
     Predicate = _PN//_PA,
     phrase(format_("~q", [Predicate]), PredicateString).
 
-% First try to extract description based on name and arity, if not, fallback to extremely simple description
-document_predicate(InputFile, Ops, Predicate, ["predicate"-PredicateString, "name"-Name, "description"-Description]) :-
-    portray_clause(documenting(Predicate)),
-    predicate_string(Predicate, Ops, PredicateString),
-    (
-	(
-	    phrase_from_file(predicate_documentation(Predicate, Name, DescriptionMd), InputFile),
-	    djot(DescriptionMd, Description)
-	)
-    ;	document_predicate(Predicate, Ops, ["name"-Name, "description"-Description])
-    ).
-
-document_predicate(Predicate, Ops, ["name"-Name, "description"-Description]) :-
+document_predicate(Ops, Predicate, ["predicate"-Name, "name"-Name, "description"-Description]) :-
     predicate_string(Predicate, Ops, Name),
     Description = "".
 
+public_undocumented_predicates(_, _, [], []).
+public_undocumented_predicates(Documented, Ops, [Predicate|Public], Undocumented) :-
+    predicate_string(Predicate, Ops, PredicateString),
+    member(["predicate"-PredicateString|_], Documented),
+    public_undocumented_predicates(Documented, Ops, Public, Undocumented).
+public_undocumented_predicates(Documented, Ops, [Predicate|Public], [Predicate|Undocumented]) :-
+    predicate_string(Predicate, Ops, PredicateString),
+    \+ member(["predicate"-PredicateString|_], Documented),
+    public_undocumented_predicates(Documented, Ops, Public, Undocumented).
+    
+
 predicate_documentation(Predicate, Name, Description) -->
-    ... ,
-    "%% ",
-    predicate_name(Predicate, Name),
-    "\n%", whites, "\n",
+    "%% ", seq(Name), "\n%", { \+ member('\n', Name) },
+    whites, "\n",
     predicate_description(Description),
-    ... .
+    { phrase(predicate_name(Predicate), Name) }.
 
-predicate_name(PredicateName/0, Name) -->
-    {
-	atom_chars(PredicateName, NameCs)
-    },
-    NameCs,
-    seq(RestCs),
-    {
-	append(NameCs, RestCs, Name)
-    }.
+predicate_name_seq([X|Xs]) -->
+    [X],
+    { X \= ' ', X \= '(', X \= ')' },
+    predicate_name_seq(Xs).
+predicate_name_seq([]) --> "".
 
-predicate_name(PredicateName/Arity, Name) -->
-    {
-	atom_chars(PredicateName, NameCs)
-    },
-    NameCs,
-    "(",
-    seq(Args),
-    ")",
-    !,
-    {
-	Commas is Arity - 1,
-	phrase(commas(Commas), Args)
-    },
-    seq(RestCs),
-    {
-	phrase((NameCs,"(",seq(Args),")",seq(RestCs)), Name)
-    }.
-
-predicate_name(PredicateName//0, Name) -->
-    {
-	atom_chars(PredicateName, NameCs)
-    },
-    NameCs,"//",
-    seq(RestCs),
-    {
-	phrase((NameCs, RestCs, "//"), Name)
-    }.
-
-predicate_name(PredicateName//Arity, Name) -->
-    {
-	atom_chars(PredicateName, NameCs)
-    },
-    NameCs,
+predicate_name(PredicateName//Arity) -->
+    predicate_name_seq(PredicateNameCs),
     "(",
     seq(Args),
     ")//",
-    !,
     {
-	Commas is Arity - 1,
-	phrase(commas(Commas), Args)
-    },
-    seq(RestCs),
-    {
-	phrase((NameCs,"(",seq(Args),")//",seq(RestCs)), Name)
+	Commas #= Arity - 1,
+	phrase(commas(Commas), Args),
+	atom_chars(PredicateName, PredicateNameCs)
     }.
-    
+
+predicate_name(PredicateName//0) -->
+    predicate_name_seq(PredicateNameCs),
+    "//",
+    {
+	atom_chars(PredicateName, PredicateNameCs)
+    }.
+
+predicate_name(PredicateName/Arity) -->
+    predicate_name_seq(PredicateNameCs),
+    "(",
+    seq(Args),
+    ")",
+    seq(_),
+    {
+	Commas #= Arity - 1,
+	phrase(commas(Commas), Args),
+	atom_chars(PredicateName, PredicateNameCs)
+    }.
+
+predicate_name(PredicateName/0) -->
+    predicate_name_seq(PredicateNameCs),
+    ".",
+    {
+	atom_chars(PredicateName, PredicateNameCs)
+    }.
+
+predicate_name(PredicateName/0) -->
+    predicate_name_seq(PredicateNameCs),
+    seq(_),
+    {
+	atom_chars(PredicateName, PredicateNameCs)
+    }.
 
 predicate_description(Description) -->
     "% ", seq(Line), "\n",
