@@ -8,7 +8,7 @@
 :- use_module(library(ordsets)).
 :- use_module(library(time)).
 :- use_module(library(clpz)).
-:- use_module(library(debug)).
+:- use_module(library(dif)).
 
 :- use_module(teruel/teruel).
 :- use_module(djota/djota).
@@ -267,7 +267,7 @@ predicate_documentation(Predicate, Name, Description) -->
 
 predicate_name_seq([X|Xs]) -->
     [X],
-    { X \= ' ', X \= '(', X \= ')' },
+    { maplist(dif(X), " ()") },
     predicate_name_seq(Xs).
 predicate_name_seq([]) --> "".
 
@@ -294,7 +294,7 @@ predicate_name(PredicateName/Arity) -->
     "(",
     seq(Args),
     ")",
-    seq(_),
+    ... ,
     {
 	Commas #= Arity - 1,
 	phrase(commas(Commas), Args),
@@ -310,7 +310,7 @@ predicate_name(PredicateName/0) -->
 
 predicate_name(PredicateName/0) -->
     predicate_name_seq(PredicateNameCs),
-    seq(_),
+    ... ,
     {
 	atom_chars(PredicateName, PredicateNameCs)
     }.
