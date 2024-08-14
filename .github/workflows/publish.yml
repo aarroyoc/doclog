@@ -11,9 +11,9 @@ jobs:
       - name: Install Netlify CLI
         run: npm install -g netlify-cli@16.0.2
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Checkout Scryer Prolog
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           repository: mthom/scryer-prolog
           path: scryer-prolog
@@ -25,9 +25,7 @@ jobs:
       - name: Install Dependencies
         run: make setup
       - name: Generate docs for https://www.scryer.pl
-        run: bash doclog.sh scryer-test.config.pl
-      - name: Copy image
-        run: cp scryer-prolog/logo/scryer.png output/scryer.png
+        run: make
       - name: Upload site
         run: netlify deploy --prod --dir=output
         env:

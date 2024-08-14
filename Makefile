@@ -18,7 +18,3 @@ setup:
 	git clone --depth 1 --branch v0.3.3 https://github.com/aarroyoc/djota
 	rm -rf scryer-prolog
 	git clone --depth 1 https://github.com/mthom/scryer-prolog
-
-.PHONY: test
-test:
-	bash doclog.sh scryer-test.config.pl
