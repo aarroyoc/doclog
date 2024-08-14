@@ -1,14 +1,22 @@
 body {
     font-family: sans-serif;
     margin: 1rem;
-    max-width: 80rem;
     margin-top: auto;
 }
 
 .mainContent {
     display: grid;
-    grid-template-columns: 2fr 5fr;
+    grid-template-columns: 2fr 6fr;
     grid-column-gap: 20px;
+}
+
+nav {
+    max-width: calc(80rem / 6 * 1.5);
+    word-wrap: break-word;
+}
+
+main {
+    max-width: calc(80rem / 6 * 5);
 }
 
 .moduleDescription {
@@ -45,11 +53,14 @@ footer {
     justify-content: space-between;
     align-items: center;
     border-bottom: solid #00007f 10px;
+    min-height: 4rem;
 }
 
 .topbarLink {
     text-decoration: none;
     color: black;
+    font-size: 2rem;
+    font-weight: bold;    
 }
 
 table {

@@ -1,25 +1,3 @@
-<!DOCTYPE html>
-<html>
-  <head>
-    <meta charset="utf-8">
-    <title>{{ project_name }}</title>
-    <link rel="stylesheet" href="/doclog.css"/>
-  </head>
-  <body>
-    <div class="topbar">
-      <h1>{{ project_name }}</h1>
-      <input list="predicates" type="search" placeholder="Search..." id="search">
-      <datalist id="predicates"></datalist>
-    </div>
-    
-    <div class="mainContent">
-      <nav>
-	<h4>Libraries</h4>
-	{{ nav }}
-      </nav>
-      <main>{{ readme }}</main>
-    </div>
-    {{ footer }}
-    <script src="/doclog.js" async defer></script>
-  </body>
-</html>
+{% extends "base.html" %}
+{% block title %}{{ project_name }}{% endblock %}
+{% block main %}{{ readme }}{% endblock %}

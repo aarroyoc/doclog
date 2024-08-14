@@ -9,17 +9,29 @@
 :- use_module(library(time)).
 :- use_module(library(clpz)).
 :- use_module(library(dif)).
+:- use_module(library(debug)).
 
 :- use_module(teruel/teruel).
 :- use_module(djota/djota).
 
-run(ConfigFile) :-
-    portray_clause(doclog(1, 1, 0)),    
+:- dynamic(output_folder/1).
+:- dynamic(source_folder/1).
+
+run(SourceFolder, OutputFolder) :-
+    portray_clause(doclog(2, 0, 0)),
+    assertz(output_folder(OutputFolder)),
+    assertz(source_folder(SourceFolder)),
+    path_segments(SourceFolder, S1),
+    append(S1, ["doclog.config.pl"], C1),
+    path_segments(ConfigFile, C1),
     atom_chars(ConfigFileA, ConfigFile),
     consult(ConfigFileA),
-    generate_nav(Nav),
+    generate_nav_lib(NavLib),
+    generate_nav_learn(NavLearn),
     generate_footer(Footer),
-    Sections = ["nav"-Nav, "footer"-Footer],
+    Sections = ["nav_lib"-NavLib, "nav_learn"-NavLearn, "footer"-Footer],    
+    generate_page_learn(Sections),
+    do_copy_files,
     generate_page_docs(Sections),
     generate_readme(Sections),
     halt.
@@ -28,9 +40,30 @@ run(_) :-
     portray_clause(error_running_doclog),
     halt(1).
 
-generate_nav(NavHtml) :-
-    source_folder(SF),
-    path_segments(SF, SFSG),
+do_copy_files :-
+    source_folder(S1),
+    output_folder(O1),
+    path_segments(S1, S2),
+    path_segments(O1, O2),
+    findall(A-B, copy_file(A,B), Files),
+    maplist(do_copy_files_(S2, O2), Files).
+
+do_copy_files_(S2, O2, A1-B1) :-
+    path_segments(A1, A2),
+    path_segments(B1, B2),
+    append(S2, A2, A3),
+    append(O2, B2, B3),
+    path_segments(A, A3),
+    path_segments(B, B3),
+    portray_clause(copy_file(A, B)),
+    file_copy(A, B).
+
+generate_nav_lib(NavHtml) :-
+    source_folder(S1),
+    source_lib_folder(S2),
+    path_segments(S1, S3),
+    path_segments(S2, S4),
+    append(S3, S4, SFSG),
     subnav(SFSG, ".", Nav),
     member("nav"-NavHtml, Nav).
 
@@ -70,13 +103,66 @@ files_not_omitted_files(Base, [X|Xs], Ys) :-
     ),
     files_not_omitted_files(Base, Xs, Ys0).
 
+generate_nav_learn(NavLearn) :-
+    learn_pages_categories(Categories),
+    maplist(generate_nav_learn_cat, Categories, Items),
+    render("nav.html", ["items"-Items], NavLearn).
+
+generate_nav_learn_cat(Category, SubNav) :-
+    learn_pages(Pages),
+    findall(Item, (
+		member(Page, Pages),
+		Page = page(Name, Category, Source),
+		append(BaseFile, ".dj", Source),
+		append(BaseFile, ".html", File),
+		append("/learn/", File, Link),
+		Item = ["name"-Name, "link"-Link, "type"-"file"]
+	    ), Items),
+    render("nav.html", ["items"-Items], Text),
+    SubNav = ["name"-Category, "nav"-Text, "type"-"dir"].
+    
+
 generate_footer(Footer) :-
     current_time(T),
     phrase(format_time("%b %d %Y", T), Time),
     render("footer.html", ["time"-Time], Footer).
 
+generate_page_learn(Sections) :-
+    learn_pages(Pages),
+    output_folder(OutputFolder),
+    path_segments(OutputFolder, O1),
+    append(O1, ["learn"], LearnFolderSg),
+    path_segments(LearnFolder, LearnFolderSg),
+    make_directory_path(LearnFolder),
+    maplist(generate_page_learn_(Sections, LearnFolderSg), Pages).
+
+generate_page_learn_(Sections, LearnFolderSg, page(Name, Category, Source)) :-
+    portray_clause(rendering_learn_page(Name, Category)),
+    source_folder(SF),
+    learn_pages_source_folder(SourceFolder),
+    project_name(ProjectName),
+    path_segments(SF, S0),
+    path_segments(SourceFolder, S1),
+    append(S0, S1, S2),
+    append(S2, [Source], S3),
+    path_segments(SourceFile, S3),
+    phrase_from_file(seq(Text), SourceFile),
+    djot(Text, Html),
+    Vars0 = ["project_name"-ProjectName, "name"-Name, "category"-Category, "content"-Html],
+    append(Vars0, Sections, Vars),
+    render("learn.html", Vars, LearnHtml),
+    append(F1, ".dj", Source),
+    append(F1, ".html", F2),
+    append(LearnFolderSg, [F2], O1),
+    path_segments(OutputFile, O1),
+    phrase_to_file(seq(LearnHtml), OutputFile).
+
 generate_readme(Sections) :-
-    readme_file(ReadmeFile),
+    source_folder(S1),
+    path_segments(S1, S2),
+    readme_file(R1),
+    append(S2, [R1], R2),
+    path_segments(ReadmeFile, R2),
     project_name(ProjectName),
     output_folder(OutputFolder),
     path_segments(OutputFolder, OutputFolderSg),
@@ -90,11 +176,15 @@ generate_readme(Sections) :-
     phrase_to_file(seq(IndexHtml), OutputFile).
 
 generate_page_docs(Sections) :-
-    source_folder(DocsFolder),
-    output_folder(OutputFolder),    
-    make_directory(OutputFolder),
-    directory_files(DocsFolder, Files),
+    source_folder(S1),
+    source_lib_folder(S2),
+    path_segments(S1, S3),
+    path_segments(S2, S4),
+    append(S3, S4, Base),    
     path_segments(DocsFolder, Base),
+    output_folder(OutputFolder),    
+    make_directory_path(OutputFolder),
+    directory_files(DocsFolder, Files),
     path_segments(OutputFolder, Output),
     append(Output, ["search-index.json"], SearchIndexSg),
     path_segments(SearchIndex, SearchIndexSg),
@@ -102,9 +192,13 @@ generate_page_docs(Sections) :-
 	format(SearchWriteStream, "[", []),
         maplist(process_file(Base, Output, Sections, SearchWriteStream), Files),
 	format(SearchWriteStream, "{}]", [])
-    ), close(SearchWriteStream)),	
-    copy_file("doclog.css", Output),
-    copy_file("doclog.js", Output).
+		       ), close(SearchWriteStream)),
+    append(Output, ["doclog.css"], F1),
+    append(Output, ["doclog.js"], F2),
+    path_segments(F3, F1),
+    path_segments(F4, F2),
+    file_copy("doclog.css", F3),
+    file_copy("doclog.js", F4).
 
 process_file(Base, Output0, Sections, SearchWriteStream, File0) :-
     append(Base, [File0], FileSg),
@@ -135,7 +229,7 @@ process_file(Base0, Output0, Sections, SearchWriteStream, Dir0) :-
     path_segments(Dir, DirSg),
     directory_exists(Dir),
     path_segments(OutputDir, Output),
-    make_directory(OutputDir),
+    make_directory_path(OutputDir),
     directory_files(Dir, Files),
     maplist(process_file(DirSg, Output, Sections, SearchWriteStream), Files).
 
@@ -378,11 +472,3 @@ string_without([], Block) -->
 
 string_without([], _) -->
     [].
-
-copy_file(File, Output) :-
-    append(Output, [File], OutputFileSg),
-    path_segments(OutputFile, OutputFileSg),
-    setup_call_cleanup(open(File, read, Stream),(
-	get_n_chars(Stream, _, Css),
-        phrase_to_file(seq(Css), OutputFile)),
-        close(Stream)).

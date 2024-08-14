@@ -1,40 +1,19 @@
-<!DOCTYPE html>
-<html>
-  <head>
-    <title>Module {{ module_name }} - {{ project_name }} documentation</title>
-    <meta charset="utf-8"/>
-    <link rel="stylesheet" href="/doclog.css"/>
-  </head>
-  <body>
-    <div class="topbar">
-      <h1><a class="topbarLink" href="/">{{ project_name }} documentation</a></h1>
-      <input list="predicates" type="search" placeholder="Search..." id="search">
-      <datalist id="predicates"></datalist>      
+{% extends "base.html" %}
+{% block title %}Module {{ module_name }} - {{ project_name }} documentation{% endblock %}
+{% block main %}
+  <h1>Module {{ module_name }}</h1>
+  <pre><code>:- use_module(library({{ library }})).</code></pre>
+  <div class="moduleDescription">{{ module_description }}</div>
+  <div class="source">
+    <a href="{{ websource }}">Browse source code</a>
+  </div>
+
+    <div class="predicates">
+      {% for predicate in predicates %}
+  <div class="predicate" id="{{ predicate.predicate }}">
+	<h4>{{ predicate.name }}</h4>
+	<div>{{ predicate.description }}</div>
+      </div>
+      {% endfor %}
     </div>
-    <div class="mainContent">
-      <nav>
-	<h4>Libraries</h4>
-	{{ nav }}
-      </nav>
-      <main>
-	<h2>Module {{ module_name }}</h2>
-	<pre><code>:- use_module(library({{ library }})).</code></pre>
-        <div class="moduleDescription">{{ module_description }}</div>
-	<div class="source">
-	  <a href="{{ websource }}">Browse source code</a>
-	</div>
-	
-	  <div class="predicates">
-	    {% for predicate in predicates %}
-        <div class="predicate" id="{{ predicate.predicate }}">
-	      <h4>{{ predicate.name }}</h4>
-	      <div>{{ predicate.description }}</div>
-	    </div>
-	    {% endfor %}
-	  </div>
-      </main>
-    </div>
-    {{ footer }}
-    <script src="/doclog.js" async defer></script>    
-  </body>
-</html>
+{% endblock %}
