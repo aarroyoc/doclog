@@ -39,12 +39,12 @@ Then, install the dependencies:
 $ make setup
 ```
 
-After that, you must create a configuration file. This file will contain several options required to document your project, including your source directory, a README file and an output dir. Take a look at `scryer.config.pl` for an example file.
+After that, you must create a configuration file called `doclog.config.pl`. This file will contain several options required to document your project, and must be in your source directory. Take a look at `scryer.config.pl` for an example file.
 
 With your config file, you can execute Doclog:
 
 ```
-bash doclog.sh CONFIG_FILE
+bash doclog.sh SOURCE_FOLDER OUTPUT_FOLDER
 ```
 
 And wait for the docs to be generated!
