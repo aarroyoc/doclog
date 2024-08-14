@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>{% block title %}{% endblock %}</title>
+    <meta charset="utf-8"/>
+    <link rel="stylesheet" href="/doclog.css"/>
+  </head>
+  <body>
+    <div class="topbar">
+      <a class="topbarLink" href="/">{{ project_name }}</a>
+      <input list="predicates" type="search" placeholder="Search..." id="search">
+      <datalist id="predicates"></datalist>      
+    </div>
+    <div class="mainContent">
+      <nav>
+	<h4>Learn</h4>
+	{{ nav_learn }}
+	<h4>Libraries</h4>
+	{{ nav_lib }}
+      </nav>
+      <main>
+	{% block main %}{% endblock %}
+      </main>
+    </div>
+    {{ footer }}
+    <script src="/doclog.js" async defer></script>    
+  </body>
+</html>
