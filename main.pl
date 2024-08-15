@@ -83,13 +83,19 @@ subnav(Base, File, ["name"-Name, "link"-['/'|Link], "type"-"file"]) :-
     path_segments(FilePath, FileSg),
     file_exists(FilePath),
     append(_, ["."|LinkSg], FileSg),
+    \+ member(".", LinkSg),
     path_segments(Link0, LinkSg),
     append(Link1, ".pl", Link0),
     append(Link1, ".html", Link).
 
 files_not_omitted_files(_, [], []).
 files_not_omitted_files(Base, [X|Xs], Ys) :-
-    source_folder(SF),
+    source_folder(S1),
+    source_lib_folder(S2),
+    path_segments(S1, S3),
+    path_segments(S2, S4),
+    append(S3, S4, SFSG),
+    path_segments(SF, SFSG),
     findall(FullOmitFile,(
 		omit(Omit),
 		member(OmitFile, Omit),
