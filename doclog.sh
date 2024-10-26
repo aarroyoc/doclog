@@ -1,3 +1,9 @@
 #!/usr/bin/env bash
 
-scryer-prolog -g 'run("'$1'", "'$2'").' main.pl
+DOCLOG=$(realpath $(dirname $0))
+SOURCE=$(realpath $1)
+OUTPUT=$(realpath $2)
+
+cd $DOCLOG
+scryer-prolog -g 'run("'$SOURCE'", "'$OUTPUT'").' main.pl
+cd -
