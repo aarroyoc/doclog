@@ -6,9 +6,14 @@ DOCLOG=$(realpath $(dirname $0))
 SOURCE=$1
 OUTPUT=$2
 
-while true; do
-	inotifywait -e modify,create,delete --exclude $OUTPUT -r $SOURCE
-
+doclog_rebuild() {
 	rm -rf $OUTPUT
 	$DOCLOG/doclog.sh $SOURCE $OUTPUT
+}
+
+doclog_rebuild
+
+while true; do
+	inotifywait -e modify,create,delete --exclude $OUTPUT -r $SOURCE
+	doclog_rebuild
 done
