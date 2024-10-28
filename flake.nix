@@ -34,6 +34,7 @@
             version = "0.0.1";
             src = ./.;
             dontBuild = true;
+            buildDependencies = [ inotify-tools ];
 
             installPhase = ''
               mkdir -p $out; cd $out
@@ -42,8 +43,9 @@
               cp -r ${scryer-prolog.src} $out/scryer-prolog
               cp $src/* $out
               sed -i 's@scryer-prolog@${scryer-prolog}/bin/scryer-prolog@' doclog.sh
-              chmod +x doclog.sh
+              sed -i 's@inotifywait@${inotify-tools}/bin/inotifywait@' watch.sh
               ln doclog.sh doclog
+              ln watch.sh doclog_watch
             '';
 
             homepage = "https://github.com/aarroyoc/doclog";
@@ -51,13 +53,19 @@
           };
         };
 
-        apps = {
+        defaultApp = apps.doclog;
+        apps = rec {
           doclog = {
             type = "app";
             program = "${packages.doclog}/doclog";
           };
+
+          watch = doclog_watch;
+          doclog_watch = {
+            type = "app";
+            program = "${packages.doclog}/doclog_watch";
+          };
         };
-        defaultApp = apps.doclog;
       }
     );
 }
