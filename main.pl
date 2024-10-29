@@ -18,27 +18,24 @@
 :- dynamic(source_folder/1).
 
 run(SourceFolder, OutputFolder) :-
-    portray_clause(doclog(2, 0, 0)),
-    assertz(output_folder(OutputFolder)),
-    assertz(source_folder(SourceFolder)),
-    path_segments(SourceFolder, S1),
-    append(S1, ["doclog.config.pl"], C1),
-    path_segments(ConfigFile, C1),
-    atom_chars(ConfigFileA, ConfigFile),
-    consult(ConfigFileA),
-    generate_nav_lib(NavLib),
-    generate_nav_learn(NavLearn),
-    generate_footer(Footer),
-    Sections = ["nav_lib"-NavLib, "nav_learn"-NavLearn, "footer"-Footer],    
-    generate_page_learn(Sections),
-    do_copy_files,
-    generate_page_docs(Sections),
-    generate_readme(Sections),
-    halt.
-
-run(_) :-
-    portray_clause(error_running_doclog),
-    halt(1).
+    catch((
+        portray_clause(doclog(2, 0, 0)),
+	assertz(output_folder(OutputFolder)),
+	assertz(source_folder(SourceFolder)),
+	path_segments(SourceFolder, S1),
+	append(S1, ["doclog.config.pl"], C1),
+	path_segments(ConfigFile, C1),
+	atom_chars(ConfigFileA, ConfigFile),
+	consult(ConfigFileA),
+	generate_nav_lib(NavLib),
+	generate_nav_learn(NavLearn),
+	generate_footer(Footer),
+	Sections = ["nav_lib"-NavLib, "nav_learn"-NavLearn, "footer"-Footer],    
+	generate_page_learn(Sections),
+	do_copy_files,
+	generate_page_docs(Sections),
+	generate_readme(Sections),
+	halt), _, halt(1)).
 
 do_copy_files :-
     source_folder(S1),
