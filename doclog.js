@@ -2,7 +2,7 @@ window.addEventListener("load", () => {
     const searchBox = document.getElementById("search");
     const predicates = document.getElementById("predicates");
 
-    fetch("/search-index.json")
+    fetch("search-index.json")
 	.then((res) => res.json())
 	.then((data) => {
 	    for(let predicate of data) {

@@ -118,7 +118,7 @@ generate_nav_learn_cat(Category, SubNav) :-
 		Page = page(Name, Category, Source),
 		append(BaseFile, ".dj", Source),
 		append(BaseFile, ".html", File),
-		append("/learn/", File, Link),
+		append("/learn/", File, Link),  /* todo */
 		Item = ["name"-Name, "link"-Link, "type"-"file"]
 	    ), Items),
     render("nav.html", ["items"-Items], Text),
@@ -134,7 +134,7 @@ generate_page_learn(Sections) :-
     learn_pages(Pages),
     output_folder(OutputFolder),
     path_segments(OutputFolder, O1),
-    append(O1, ["learn"], LearnFolderSg),
+    append(O1, ["learn"], LearnFolderSg),  /* todo */
     path_segments(LearnFolder, LearnFolderSg),
     make_directory_path(LearnFolder),
     maplist(generate_page_learn_(Sections, LearnFolderSg), Pages).
