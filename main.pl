@@ -35,7 +35,7 @@ run(SourceFolder, OutputFolder) :-
 	do_copy_files,
 	generate_page_docs(Sections),
 	generate_readme(Sections),
-	halt), _, halt(1)).
+	halt), Error, (write(Error), nl, halt(1))).
 
 do_copy_files :-
     source_folder(S1),

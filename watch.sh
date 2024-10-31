@@ -14,6 +14,7 @@ doclog_rebuild() {
 doclog_rebuild
 
 while true; do
+	echo
 	inotifywait -e modify,create,delete --exclude $OUTPUT -r $SOURCE
 	doclog_rebuild
 done
