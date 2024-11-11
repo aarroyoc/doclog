@@ -11,4 +11,4 @@ learn_pages([
 		   page("Second test page", "Advanced topics", "second-test-page.dj"),
 		   page("Third test page", "First steps", "test-page-3.dj"),
 ]).
-
+base_url("/").

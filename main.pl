@@ -16,6 +16,7 @@
 
 :- dynamic(output_folder/1).
 :- dynamic(source_folder/1).
+:- dynamic(base_url/1).
 
 run(SourceFolder, OutputFolder) :-
     catch((
@@ -36,6 +37,12 @@ run(SourceFolder, OutputFolder) :-
 	generate_page_docs(Sections),
 	generate_readme(Sections),
 	halt), _, halt(1)).
+
+docs_base_url(BaseURL) :-
+    ( base_url(X) ->
+      BaseURL = X
+    ; BaseURL = "/"
+    ).
 
 do_copy_files :-
     source_folder(S1),
@@ -144,6 +151,7 @@ generate_page_learn_(Sections, LearnFolderSg, page(Name, Category, Source)) :-
     source_folder(SF),
     learn_pages_source_folder(SourceFolder),
     project_name(ProjectName),
+    docs_base_url(BaseURL),
     path_segments(SF, S0),
     path_segments(SourceFolder, S1),
     append(S0, S1, S2),
@@ -151,7 +159,7 @@ generate_page_learn_(Sections, LearnFolderSg, page(Name, Category, Source)) :-
     path_segments(SourceFile, S3),
     phrase_from_file(seq(Text), SourceFile),
     djot(Text, Html),
-    Vars0 = ["project_name"-ProjectName, "name"-Name, "category"-Category, "content"-Html],
+    Vars0 = ["project_name"-ProjectName, "base_url"-BaseURL, "name"-Name, "category"-Category, "content"-Html],
     append(Vars0, Sections, Vars),
     render("learn.html", Vars, LearnHtml),
     append(F1, ".dj", Source),
@@ -166,14 +174,15 @@ generate_readme(Sections) :-
     readme_file(R1),
     append(S2, [R1], R2),
     path_segments(ReadmeFile, R2),
-    project_name(ProjectName),
+    project_name(ProjectName),    
+    docs_base_url(BaseURL),
     output_folder(OutputFolder),
     path_segments(OutputFolder, OutputFolderSg),
     append(OutputFolderSg, ["index.html"], OutputFileSg),
     path_segments(OutputFile, OutputFileSg),
     phrase_from_file(seq(ReadmeMd), ReadmeFile),
     djot(ReadmeMd, ReadmeHtml),
-    Vars0 = ["project_name"-ProjectName, "readme"-ReadmeHtml],
+    Vars0 = ["project_name"-ProjectName, "base_url"-BaseURL, "readme"-ReadmeHtml],
     append(Vars0, Sections, Vars),
     render("index.html", Vars, IndexHtml),
     phrase_to_file(seq(IndexHtml), OutputFile).
@@ -285,6 +294,7 @@ document_file(InputFile, OutputFile, ModuleName, PublicPredicates, Ops, Sections
     djot(ModuleDescriptionMd, ModuleDescriptionHtml),
     atom_chars(ModuleName, ModuleNameStr),
     project_name(ProjectName),
+    docs_base_url(BaseURL),
     source_folder(S1),
     source_lib_folder(S2),
     path_segments(S1, S3),
@@ -297,6 +307,7 @@ document_file(InputFile, OutputFile, ModuleName, PublicPredicates, Ops, Sections
     append(WebSourceBase, ExtraFile, WebSource),
     Vars0 = [
 	"project_name"-ProjectName,
+	"base_url"-BaseURL,
 	"module_name"-ModuleNameStr,
 	"module_description"-ModuleDescriptionHtml,
 	"predicates"-Predicates,

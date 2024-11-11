@@ -3,11 +3,11 @@
   <head>
     <title>{% block title %}{% endblock %}</title>
     <meta charset="utf-8"/>
-    <link rel="stylesheet" href="/doclog.css"/>
+    <link rel="stylesheet" href="{{ base_url }}doclog.css"/>
   </head>
   <body>
     <div class="topbar">
-      <a class="topbarLink" href="/">{{ project_name }}</a>
+      <a class="topbarLink" href="{{ base_url }}">{{ project_name }}</a>
       <input list="predicates" type="search" placeholder="Search..." id="search">
       <datalist id="predicates"></datalist>      
     </div>
@@ -23,6 +23,6 @@
       </main>
     </div>
     {{ footer }}
-    <script src="/doclog.js" async defer></script>    
+    <script src="{{ base_url }}doclog.js" async defer></script>    
   </body>
 </html>
