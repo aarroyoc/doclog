@@ -5,5 +5,5 @@ SOURCE=$(realpath $1)
 OUTPUT=$(realpath $2)
 
 cd $DOCLOG
-scryer-prolog -g 'run("'$SOURCE'", "'$OUTPUT'").' main.pl
+scryer-prolog -g 'run("'$SOURCE'", "'$OUTPUT'").' -g 'halt' main.pl
 cd -
