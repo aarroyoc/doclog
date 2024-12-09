@@ -44,7 +44,13 @@ After that, you must create a configuration file called `doclog.config.pl`. This
 With your config file, you can execute Doclog:
 
 ```
-bash doclog.sh SOURCE_FOLDER OUTPUT_FOLDER
+./doclog.sh SOURCE_FOLDER OUTPUT_FOLDER
 ```
 
 And wait for the docs to be generated!
+
+While developing, it might be usefull to rebuild everytime something in the SOURCE\_FOLDER changed. You can do so, by starting this command:
+
+```
+./watch.sh SOURCE_FOLDER OUTPUT_FOLDER
+```
