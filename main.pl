@@ -20,7 +20,7 @@
 
 run(SourceFolder, OutputFolder) :-
     catch((
-        portray_clause(doclog(2, 0, 0)),
+        portray_color(blue, doclog(2, 0, 0)),
 	assertz(output_folder(OutputFolder)),
 	assertz(source_folder(SourceFolder)),
 	path_segments(SourceFolder, S1),
@@ -31,11 +31,12 @@ run(SourceFolder, OutputFolder) :-
 	generate_nav_lib(NavLib),
 	generate_nav_learn(NavLearn),
 	generate_footer(Footer),
-	Sections = ["nav_lib"-NavLib, "nav_learn"-NavLearn, "footer"-Footer],    
+	Sections = ["nav_lib"-NavLib, "nav_learn"-NavLearn, "footer"-Footer],
 	generate_page_learn(Sections),
 	do_copy_files,
 	generate_page_docs(Sections),
 	generate_readme(Sections),
+        portray_color(green, done),
 	halt), Error, (write(Error), nl, halt(1))).
 
 docs_base_url(BaseURL) :-
@@ -62,16 +63,28 @@ do_copy_files_(S2, O2, A1-B1) :-
     portray_clause(copy_file(A, B)),
     file_copy(A, B).
 
+% We do some path detection which will fail unless all paths are equally
+% separated. This relates a base path, a tail path and the segments of the
+% union.
+%
+% canonicalize("C:\\mypath", "my/otherpath", ["C:", "mypath", "my", "otherpath"]).
+canonicalize(Base, Path, ResSG) :-
+    path_segments(Base, BaseSG),
+    path_segments(Sep, ["", ""]),
+    Sep = [Separator],
+    replace_char('\\\\', Separator, Path, Path1),
+    replace_char('/', Separator, Path1, Path2),
+    path_segments(Path2, PathSG),
+    append(BaseSG, PathSG, ResSG).
+
 generate_nav_lib(NavHtml) :-
     source_folder(S1),
-    source_lib_folder(S2),
-    path_segments(S1, S3),
-    path_segments(S2, S4),
-    append(S3, S4, SFSG),
+    source_lib_folder(S20),
+    canonicalize(S1, S20, SFSG),
     subnav(SFSG, ".", Nav),
     member("nav"-NavHtml, Nav).
 
-subnav(Base, Dir, ["name"-Dir, "nav"-Nav, "type"-"dir"]) :-    
+subnav(Base, Dir, ["name"-Dir, "nav"-Nav, "type"-"dir"]) :-
     append(Base, [Dir], DirSg),
     path_segments(RealDir, DirSg),
     directory_exists(RealDir),
@@ -96,16 +109,15 @@ files_not_omitted_files(_, [], []).
 files_not_omitted_files(Base, [X|Xs], Ys) :-
     source_folder(S1),
     source_lib_folder(S2),
-    path_segments(S1, S3),
-    path_segments(S2, S4),
-    append(S3, S4, SFSG),
+    canonicalize(S1, S2, SFSG),
     path_segments(SF, SFSG),
+    path_segments(Separator, ["", ""]),
     findall(FullOmitFile,(
 		omit(Omit),
 		member(OmitFile, Omit),
-		append(SF, ['/', '.', '/'|OmitFile], FullOmitFile)
+		append([SF, Separator, ".", Separator, OmitFile], FullOmitFile)
 	    ), OmitFiles),
-    append(Base, ['/'|X], File),
+    append([Base, Separator, X], File),
     (
 	member(File, OmitFiles) ->
 	Ys = Ys0
@@ -130,7 +142,6 @@ generate_nav_learn_cat(Category, SubNav) :-
 	    ), Items),
     render("nav.html", ["items"-Items], Text),
     SubNav = ["name"-Category, "nav"-Text, "type"-"dir"].
-    
 
 generate_footer(Footer) :-
     current_time(T),
@@ -174,7 +185,7 @@ generate_readme(Sections) :-
     readme_file(R1),
     append(S2, [R1], R2),
     path_segments(ReadmeFile, R2),
-    project_name(ProjectName),    
+    project_name(ProjectName),
     docs_base_url(BaseURL),
     output_folder(OutputFolder),
     path_segments(OutputFolder, OutputFolderSg),
@@ -190,11 +201,9 @@ generate_readme(Sections) :-
 generate_page_docs(Sections) :-
     source_folder(S1),
     source_lib_folder(S2),
-    path_segments(S1, S3),
-    path_segments(S2, S4),
-    append(S3, S4, Base),    
+    canonicalize(S1, S2, Base),
     path_segments(DocsFolder, Base),
-    output_folder(OutputFolder),    
+    output_folder(OutputFolder),
     make_directory_path(OutputFolder),
     directory_files(DocsFolder, Files),
     path_segments(OutputFolder, Output),
@@ -220,7 +229,7 @@ process_file(Base, Output0, Sections, SearchWriteStream, File0) :-
     path_segments(Output, OutputSg),
     path_segments(File, FileSg),
     file_exists(File),
-    portray_clause(process_file(File)),
+    portray_color(green, process_file(File)),
     open(File, read, FileStream),
     read_term(FileStream, Term, []),
     (
@@ -233,7 +242,6 @@ process_file(Base, Output0, Sections, SearchWriteStream, File0) :-
     ;   true
     ),
     close(FileStream).
-    
 
 process_file(Base0, Output0, Sections, SearchWriteStream, Dir0) :-
     append(Base0, [Dir0], DirSg),
@@ -252,7 +260,6 @@ predicates_clean([X|Xs], [X|Ys], Ops) :-
 predicates_clean([X|Xs], Ys, [X|Ops]) :-
     X = op(_,_,_),
     predicates_clean(Xs, Ys, Ops).
-    
 
 append_predicates_search_index(Output, PublicPredicates, Ops, SearchWriteStream) :-
     output_folder(OF),
@@ -281,13 +288,27 @@ escape_js(Xs) -->
     escape_js(Xs0),
     { append("\\\\", Xs0, Xs) }.
 
+replace_char(_, _, [], []).
+replace_char(X, Y, [X|Xs], [Y|Ys]) :-
+    replace_char(X, Y, Xs, Ys).
+replace_char(X, Y, [Z|Xs], [Z|Ys]) :-
+    X \= Z,
+    replace_char(X, Y, Xs, Ys).
+
 % let's try to document every text comment we see
 % Later, we'll add public predicates that have no documentation
 document_file(InputFile, OutputFile, ModuleName, PublicPredicates, Ops, Sections) :-
     phrase_from_file(seq(FileText), InputFile),
     phrase(documented_predicates(Predicates0, Ops), FileText),
     public_undocumented_predicates(Predicates0, Ops, PublicPredicates, PublicUndocumented),
-    portray_clause(undocumented_public_predicates(PublicUndocumented)),
+    (   PublicUndocumented \= [],
+        % Only portray if there are undocumented items
+        portray_color(yellow, undocumented_public_predicates(PublicUndocumented))
+    ;
+        green(Green),
+        reset(Reset),
+        format("~sFile fully documented.~s~n", [Green, Reset])
+    ),
     maplist(document_predicate(Ops), PublicUndocumented, Predicates1),
     append(Predicates0, Predicates1, Predicates),
     phrase(module_description(ModuleDescriptionMd), FileText),
@@ -297,13 +318,14 @@ document_file(InputFile, OutputFile, ModuleName, PublicPredicates, Ops, Sections
     docs_base_url(BaseURL),
     source_folder(S1),
     source_lib_folder(S2),
-    path_segments(S1, S3),
-    path_segments(S2, S4),
-    append(S3, S4, S5),
+    canonicalize(S1, S2, S5),
     path_segments(SF, S5),
     websource(WebSourceBase),
     append(SF, ExtraFile, InputFile),
-    append(['/'|LibraryUse], ".pl", ExtraFile),
+    path_segments(Separator, ["", ""]),
+    append([Separator, LibraryUse, ".pl"], ExtraFile),
+    % The use_module directive always has to use forward slashes!
+    replace_char('\\', '/', LibraryUse, LibraryUse1),
     append(WebSourceBase, ExtraFile, WebSource),
     Vars0 = [
 	"project_name"-ProjectName,
@@ -312,7 +334,7 @@ document_file(InputFile, OutputFile, ModuleName, PublicPredicates, Ops, Sections
 	"module_description"-ModuleDescriptionHtml,
 	"predicates"-Predicates,
 	"websource"-WebSource,
-	"library"-LibraryUse
+	"library"-LibraryUse1
     ],
     append(Vars0, Sections, Vars),
     render("page.html", Vars, HtmlOut),
@@ -370,7 +392,6 @@ public_undocumented_predicates(Documented, Ops, [Predicate|Public], [Predicate|U
     predicate_string(Predicate, Ops, PredicateString),
     \+ member(["predicate"-PredicateString|_], Documented),
     public_undocumented_predicates(Documented, Ops, Public, Undocumented).
-    
 
 predicate_documentation(Predicate, Name, Description) -->
     "%% ", seq(Name), "\n%", { \+ member('\n', Name) },
@@ -470,7 +491,7 @@ dirs_only([F|Fs], Output, [F|FOs]) :-
 
 dirs_only([F|Fs], Output, FOs) :-
     append(Output, [F], OutputFile),
-    path_segments(File, OutputFile),    
+    path_segments(File, OutputFile),
     \+ directory_exists(File),
     dirs_only(Fs, Output, FOs).
 
@@ -491,3 +512,25 @@ string_without([], Block) -->
 
 string_without([], _) -->
     [].
+
+red(X) :-
+    chars_utf8bytes(A, [27]),
+    append(A, "[0;31m", X).
+green(X) :-
+    chars_utf8bytes(A, [27]),
+    append(A, "[0;32m", X).
+yellow(X) :-
+    chars_utf8bytes(A, [27]),
+    append(A, "[0;33m", X).
+blue(X) :-
+    chars_utf8bytes(A, [27]),
+    append(A, "[0;34m", X).
+reset(X) :-
+    chars_utf8bytes(A, [27]),
+    append(A, "[0m", X).
+
+portray_color(Color, X) :-
+    call(Color, A), reset(B),
+    phrase(portray_clause_(X), S),
+    append(S1, "\n", S),
+    format("~s~s~s~n", [A,S1,B]).
