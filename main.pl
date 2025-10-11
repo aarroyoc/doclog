@@ -20,7 +20,7 @@
 
 run(SourceFolder, OutputFolder) :-
     catch((
-        portray_color(blue, doclog(2, 1, 0)),
+        portray_color(blue, doclog(2, 2, 0)),
 	assertz(output_folder(OutputFolder)),
 	assertz(source_folder(SourceFolder)),
 	path_segments(SourceFolder, S1),
@@ -215,7 +215,8 @@ generate_page_docs(Sections) :-
     path_segments(DocsFolder, Base),
     output_folder(OutputFolder),
     make_directory_path(OutputFolder),
-    directory_files(DocsFolder, Files),
+    directory_files(DocsFolder, Files0),
+    sort(Files0, Files),
     path_segments(OutputFolder, Output),
     append(Output, ["search-index.json"], SearchIndexSg),
     path_segments(SearchIndex, SearchIndexSg),
