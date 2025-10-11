@@ -54,3 +54,5 @@ While developing, it might be usefull to rebuild everytime something in the SOUR
 ```
 ./watch.sh SOURCE_FOLDER OUTPUT_FOLDER
 ```
+
+There's support for incremental compilation, however, this incremental compilation won't update the sidebars.

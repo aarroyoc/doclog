@@ -20,7 +20,7 @@
 
 run(SourceFolder, OutputFolder) :-
     catch((
-        portray_color(blue, doclog(2, 0, 0)),
+        portray_color(blue, doclog(2, 1, 0)),
 	assertz(output_folder(OutputFolder)),
 	assertz(source_folder(SourceFolder)),
 	path_segments(SourceFolder, S1),
@@ -60,8 +60,11 @@ do_copy_files_(S2, O2, A1-B1) :-
     append(O2, B2, B3),
     path_segments(A, A3),
     path_segments(B, B3),
-    portray_clause(copy_file(A, B)),
-    file_copy(A, B).
+    ( file_newer(A, B) ->
+      portray_color(blue, skip_copy_file(A, B))
+    ; portray_color(green, copy_file(A, B)),
+      file_copy(A, B)
+    ).
 
 % We do some path detection which will fail unless all paths are equally
 % separated. This relates a base path, a tail path and the segments of the
@@ -158,7 +161,6 @@ generate_page_learn(Sections) :-
     maplist(generate_page_learn_(Sections, LearnFolderSg), Pages).
 
 generate_page_learn_(Sections, LearnFolderSg, page(Name, Category, Source)) :-
-    portray_clause(rendering_learn_page(Name, Category)),
     source_folder(SF),
     learn_pages_source_folder(SourceFolder),
     project_name(ProjectName),
@@ -168,16 +170,20 @@ generate_page_learn_(Sections, LearnFolderSg, page(Name, Category, Source)) :-
     append(S0, S1, S2),
     append(S2, [Source], S3),
     path_segments(SourceFile, S3),
-    phrase_from_file(seq(Text), SourceFile),
-    djot(Text, Html),
-    Vars0 = ["project_name"-ProjectName, "base_url"-BaseURL, "name"-Name, "category"-Category, "content"-Html],
-    append(Vars0, Sections, Vars),
-    render("learn.html", Vars, LearnHtml),
     append(F1, ".dj", Source),
     append(F1, ".html", F2),
     append(LearnFolderSg, [F2], O1),
     path_segments(OutputFile, O1),
-    phrase_to_file(seq(LearnHtml), OutputFile).
+    ( file_newer(SourceFile, OutputFile) ->
+      portray_color(blue, skip_rendering_learn_page(Name, Category))
+    ; portray_color(green, rendering_learn_page(Name, Category)),
+      phrase_from_file(seq(Text), SourceFile),
+      djot(Text, Html),
+      Vars0 = ["project_name"-ProjectName, "base_url"-BaseURL, "name"-Name, "category"-Category, "content"-Html],
+      append(Vars0, Sections, Vars),
+      render("learn.html", Vars, LearnHtml),
+      phrase_to_file(seq(LearnHtml), OutputFile)
+    ).
 
 generate_readme(Sections) :-
     source_folder(S1),
@@ -191,12 +197,16 @@ generate_readme(Sections) :-
     path_segments(OutputFolder, OutputFolderSg),
     append(OutputFolderSg, ["index.html"], OutputFileSg),
     path_segments(OutputFile, OutputFileSg),
-    phrase_from_file(seq(ReadmeMd), ReadmeFile),
-    djot(ReadmeMd, ReadmeHtml),
-    Vars0 = ["project_name"-ProjectName, "base_url"-BaseURL, "readme"-ReadmeHtml],
-    append(Vars0, Sections, Vars),
-    render("index.html", Vars, IndexHtml),
-    phrase_to_file(seq(IndexHtml), OutputFile).
+    ( file_newer(ReadmeFile, OutputFile) ->
+      portray_color(blue, skip_readme)
+    ; portray_color(green, readme),
+      phrase_from_file(seq(ReadmeMd), ReadmeFile),
+      djot(ReadmeMd, ReadmeHtml),
+      Vars0 = ["project_name"-ProjectName, "base_url"-BaseURL, "readme"-ReadmeHtml],
+      append(Vars0, Sections, Vars),
+      render("index.html", Vars, IndexHtml),
+      phrase_to_file(seq(IndexHtml), OutputFile)
+    ).
 
 generate_page_docs(Sections) :-
     source_folder(S1),
@@ -229,19 +239,22 @@ process_file(Base, Output0, Sections, SearchWriteStream, File0) :-
     path_segments(Output, OutputSg),
     path_segments(File, FileSg),
     file_exists(File),
-    portray_color(green, process_file(File)),
-    open(File, read, FileStream),
-    read_term(FileStream, Term, []),
-    (
+    ( file_newer(File, Output) ->
+      portray_color(blue, skip_file(File))
+    ; portray_color(green, process_file(File)),
+      open(File, read, FileStream),
+      read_term(FileStream, Term, []),
+      (
 	Term = (:- module(ModuleName, PublicPredicates)) ->
 	(
 	    predicates_clean(PublicPredicates, PublicPredicates1, Ops),
 	    document_file(File, Output, ModuleName, PublicPredicates1, Ops, Sections),
 	    append_predicates_search_index(Output, PublicPredicates1, Ops, SearchWriteStream)
 	)
-    ;   true
-    ),
-    close(FileStream).
+      ; true
+      ),
+      close(FileStream)
+    ).
 
 process_file(Base0, Output0, Sections, SearchWriteStream, Dir0) :-
     append(Base0, [Dir0], DirSg),
@@ -534,3 +547,9 @@ portray_color(Color, X) :-
     phrase(portray_clause_(X), S),
     append(S1, "\n", S),
     format("~s~s~s~n", [A,S1,B]).
+
+file_newer(A, B) :-
+    file_exists(B),
+    file_modification_time(A, TA),
+    file_modification_time(B, TB),
+    TA @< TB.
