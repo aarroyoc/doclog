@@ -1,83 +1,161 @@
+/* Base typography and layout */
 body {
-    font-family: sans-serif;
-    margin: 1rem;
-    margin-top: auto;
+  font-family: system-ui, sans-serif;
+  margin: 1rem;
+  line-height: 1.6;
+  color: #000;
+  background: #fff;
 }
 
+/* Ensure focus visibility for accessibility */
+a:focus, button:focus, input:focus {
+  outline: 2px solid #00007f;
+  outline-offset: 2px;
+}
+
+/* Skip link styling */
+.skip-link {
+  position: absolute;
+  left: -999px;
+  top: auto;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
+.skip-link:focus {
+  position: static;
+  width: auto;
+  height: auto;
+  margin: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: #00007f;
+  color: #fff;
+  z-index: 1000;
+}
+
+/* Flexbox layout */
 .mainContent {
-    display: grid;
-    grid-template-columns: 2fr 6fr;
-    grid-column-gap: 20px;
+  display: flex;
+  flex-direction: row;   /* side-by-side on desktop */
+  gap: 20px;
 }
 
-nav {
-    max-width: calc(80rem / 6 * 1.5);
-    word-wrap: break-word;
-}
-
+/* Main content area */
 main {
-    max-width: calc(80rem / 6 * 5);
+  order: 2;              /* content second visually */
+  flex: 3;               /* take more space */
+  max-width: 60rem;
 }
 
-.moduleDescription {
-    margin: 2rem;
+/* Navigation sidebar */
+nav {
+  order: 1;              /* nav first visually */
+  flex: 1;               /* narrower column */
+  max-width: 20rem;
+  word-wrap: break-word;
 }
 
-.predicates{
-    margin: 1rem;
-}
-
-.predicate > h4 {
-    background-color: #00007f;
-    color: white;
-    padding-left: 10px;
-}
-.predicate > div {
-    margin: 0.5rem;
-}
-
-.navlist {
-    list-style-type: none;
-}
-
-.mainContent > nav > h4 {
-    padding-left: 1.5rem;
-}
-
-footer {
-    text-align: center;
-}
-
+/* Topbar styling */
 .topbar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border-bottom: solid #00007f 10px;
-    min-height: 4rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: solid #00007f 10px;
+  min-height: 4rem;
 }
 
 .topbarLink {
-    text-decoration: none;
-    color: black;
-    font-size: 2rem;
-    font-weight: bold;    
+  text-decoration: none;
+  color: black;
+  font-size: 2rem;
+  font-weight: bold;
 }
 
+/* Navigation lists */
+.navlist {
+  list-style-type: none;
+  padding-left: 0;
+}
+
+nav h2 {
+  padding-left: 1rem;
+  font-size: 1.2rem;
+}
+
+/* Predicate styling */
+.predicates {
+  margin: 1rem;
+}
+
+.predicate > h3 {
+  background-color: #00007f;
+  color: #fff;
+  padding: 0.5rem;
+}
+
+.predicate > p {
+  margin: 0.5rem;
+}
+
+/* Tables */
 table {
-    border: 2px solid #00007F;
-    border-radius: 0.25rem;
-    border-collapse: collapse;
+  border: 2px solid #00007f;
+  border-radius: 0.25rem;
+  border-collapse: collapse;
 }
 
 tbody tr:nth-child(odd) {
-  background-color: #DFDFFF;
+  background-color: #dfdfff;
 }
 
 tbody tr:nth-child(even) {
-  background-color: #EFEFFF;
+  background-color: #efefff;
 }
 
 td {
-    padding-left: 10px;
-    padding-right: 10px;
+  padding: 0.5rem 1rem;
+}
+
+/* Footer */
+footer {
+  text-align: center;
+  margin-top: 2rem;
+}
+
+/* Responsive adjustments for tablets and mobile */
+@media (max-width: 1024px) {
+  .mainContent {
+    flex-direction: column; /* stack vertically */
+  }
+  nav, main {
+    order: unset;           /* natural DOM order: main first */
+    max-width: 100%;
+  }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  body {
+    background: #121212;
+    color: #e0e0e0;
+  }
+  a {
+    color: #80cbc4;
+  }
+  .topbar {
+    border-bottom: solid #1e3a8a 10px;
+  }
+  .predicate > h3 {
+    background-color: #1e3a8a;
+  }
+  table {
+    border-color: #1e3a8a;
+  }
+  tbody tr:nth-child(odd) {
+    background-color: #1e1e2f;
+  }
+  tbody tr:nth-child(even) {
+    background-color: #2a2a3f;
+  }
 }
