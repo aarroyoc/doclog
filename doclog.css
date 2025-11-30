@@ -2,36 +2,53 @@
 body {
   font-family: system-ui, sans-serif;
   margin: 1rem;
-  line-height: 1.6;
+  line-height: 1.0;
   color: #000;
   background: #fff;
+
 }
-/* Flexbox layout */
+.layout{
+  display:flex;
+  flex-direction: row;
+  align-items: flex-start;
+}
+
 .mainContent {
-  display: flex;
-  flex-direction: row;   /* side-by-side on desktop */
-  gap: 20px;
+    flex:1;
+    padding : 1rem;
+    order:2;
 }
 
-
+#navigation {
+  flex: 0 1 auto;         /* allow shrinking */
+  margin-left: 1rem;
+  order: 1;
+  max-width: 20rem;
+  min-width: 12rem;         /* don’t shrink too far */
+  width: 18vw;              /* scale with viewport */
+  word-wrap: break-word;
+}
 
 /* Responsive adjustments for tablets and mobile */
-@media (max-width: 1024px) {
-  .mainContent {
-    flex-direction: column; /* stack vertically */
+@media (max-width: 768px) {
+  .layout {
+    flex-direction: column;
   }
-  nav, main {
-    order: unset;           /* natural DOM order: main first */
+
+  .mainContent {
+    order: 1;
+  }
+
+  #navigation {
+    order: 2;
+    margin-left: 0;
+    margin-top: 1rem;
     max-width: 100%;
   }
 }
-/* Navigation sidebar */
-nav {
-  order: 1;              /* nav first visually */
-  flex: 1;               /* narrower column */
-  max-width: 20rem;
-  word-wrap: break-word;
-}
+
+
+
 
 /* Main content area */
 main {
@@ -55,12 +72,14 @@ a:focus, button:focus, input:focus {
   margin: 1rem;
 }
 
-.predicate > h3 {
+.predicate > h4 {
   background-color: #00007f;
   color: #fff;
-  padding: 0.5rem;
+  padding: 0.16rem;
 }
-
+.predicate > div {
+    margin: 0.5rem;
+}
 /* Navigation lists */
 .navlist {
   list-style-type: none;
@@ -118,8 +137,8 @@ tbody tr:nth-child(even) {
   background-color: #efefff;
 }
 
-td {
-  padding: 0.5rem 1rem;
+th, td {
+  padding: 0.25rem 0.75rem;
 }
 
 /* Skip link styling */
@@ -155,12 +174,23 @@ footer {
     background: #121212;
     color: #e0e0e0;
   }
+  h1, h2, h3, h4, h5, h6 {
+    color: #e0e0e0;   /* match body text */
+  }
+ .predicate > h4 {
+    background-color: #1e3a8a;
+  }
+
   a {
     color: #80cbc4;
   }
   .topbar {
     border-bottom: solid #1e3a8a 10px;
   }
+  .topbarLink {
+    color: #e0e0e0;  /* match body text */
+  }
+  
   .predicate > h3 {
     background-color: #1e3a8a;
   }
