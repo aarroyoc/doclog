@@ -1,83 +1,220 @@
+/* Base typography and layout */
 body {
-    font-family: sans-serif;
-    margin: 1rem;
-    margin-top: auto;
+  font-family:  sans-serif;
+  margin: 1rem;
+  line-height: 1.0;
+  color: #000;
+  background: #fff;
+
+}
+.layout{
+  display:flex;
+  flex-direction: row;
+  align-items: flex-start;
 }
 
 .mainContent {
-    display: grid;
-    grid-template-columns: 2fr 6fr;
-    grid-column-gap: 20px;
+    flex:1;
+    padding : 1rem;
+    order:2;
 }
 
-nav {
-    max-width: calc(80rem / 6 * 1.5);
-    word-wrap: break-word;
+#navigation {
+  flex: 0 1 auto;         /* allow shrinking */
+  margin-left: 1rem;
+  order: 1;
+  max-width: 20rem;
+  min-width: 12rem;         /* don’t shrink too far */
+  width: 18vw;              /* scale with viewport */
+  word-wrap: break-word;
 }
 
+/* Accessibility: visually hidden but screen reader accessible */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap; /* prevent line breaks */
+  border: 0;
+}
+
+
+/* Responsive adjustments for tablets and mobile */
+@media (max-width: 768px) {
+  .layout {
+    flex-direction: column;
+  }
+
+  .mainContent {
+    order: 1;
+  }
+
+  #navigation {
+    order: 2;
+    margin-left: 0;
+    margin-top: 1rem;
+    max-width: 100%;
+  }
+}
+
+
+
+
+/* Main content area */
 main {
-    max-width: calc(80rem / 6 * 5);
+  order: 2;              /* content second visually */
+  flex: 3;               /* take more space */
+  max-width: 60rem;
 }
+
+/* Ensure focus visibility for accessibility */
+a:focus, button:focus, input:focus {
+  outline: 2px solid #00007f;
+  outline-offset: 2px;
+}
+
 
 .moduleDescription {
     margin: 2rem;
 }
-
-.predicates{
-    margin: 1rem;
+/* Predicate styling */
+.predicates {
+  margin: 1rem;
 }
 
 .predicate > h4 {
-    background-color: #00007f;
-    color: white;
-    padding-left: 10px;
+  background-color: #00007f;
+  color: #fff;
+  padding: 0.16rem;
 }
 .predicate > div {
     margin: 0.5rem;
 }
-
+/* Navigation lists */
 .navlist {
-    list-style-type: none;
+  list-style-type: none;
+  padding-left: 1.5rem; 
+  margin : 0.
+}
+.navlist li {
+  margin: 0.25rem 0;
+}
+.navlist ul.navlist {
+  padding-left: 1.5rem;
 }
 
-.mainContent > nav > h4 {
-    padding-left: 1.5rem;
+details summary {
+  cursor: pointer;
+  font-weight: bold;
 }
 
-footer {
-    text-align: center;
-}
 
+/* Topbar styling */
 .topbar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border-bottom: solid #00007f 10px;
-    min-height: 4rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: solid #00007f 10px;
+  min-height: 4rem;
 }
 
 .topbarLink {
-    text-decoration: none;
-    color: black;
-    font-size: 2rem;
-    font-weight: bold;    
+  text-decoration: none;
+  color: black;
+  font-size: 2rem;
+  font-weight: bold;
 }
 
+
+
+
+.predicate > p {
+  margin: 0.5rem;
+}
+
+/* Tables */
 table {
-    border: 2px solid #00007F;
-    border-radius: 0.25rem;
-    border-collapse: collapse;
+  border: 2px solid #00007f;
+  border-radius: 0.25rem;
+  border-collapse: collapse;
 }
 
 tbody tr:nth-child(odd) {
-  background-color: #DFDFFF;
+  background-color: #dfdfff;
 }
 
 tbody tr:nth-child(even) {
-  background-color: #EFEFFF;
+  background-color: #efefff;
 }
 
-td {
-    padding-left: 10px;
-    padding-right: 10px;
+th, td {
+  padding: 0.25rem 0.75rem;
+}
+
+/* Skip link styling */
+.skip-link {
+  position: absolute;
+  left: -999px;
+  top: auto;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
+.skip-link:focus {
+  position: static;
+  width: auto;
+  height: auto;
+  margin: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: #00007f;
+  color: #fff;
+  z-index: 1000;
+}
+
+/* Footer */
+footer {
+  text-align: center;
+  margin-top: 2rem;
+
+}
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  body {
+    background: #121212;
+    color: #e0e0e0;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    color: #e0e0e0;   /* match body text */
+  }
+ .predicate > h4 {
+    background-color: #1e3a8a;
+  }
+
+  a {
+    color: #80cbc4;
+  }
+  .topbar {
+    border-bottom: solid #1e3a8a 10px;
+  }
+  .topbarLink {
+    color: #e0e0e0;  /* match body text */
+  }
+  
+  .predicate > h3 {
+    background-color: #1e3a8a;
+  }
+  table {
+    border-color: #1e3a8a;
+  }
+  tbody tr:nth-child(odd) {
+    background-color: #1e1e2f;
+  }
+  tbody tr:nth-child(even) {
+    background-color: #2a2a3f;
+  }
 }

@@ -1,28 +1,44 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
   <head>
-    <title>{% block title %}{% endblock %}</title>
     <meta charset="utf-8"/>
+    <title>{% block title %}{% endblock %}</title>
+    <meta name="keywords" content="Prolog, Scryer Prolog, logic programming, Prolog tutorials, Prolog libraries">
+    <meta name="description" content="{{ project_name }} documentation and learning resources"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
     <link rel="stylesheet" href="{{ base_url }}doclog.css"/>
   </head>
   <body>
-    <div class="topbar">
-      <a class="topbarLink" href="{{ base_url }}">{{ project_name }}</a>
-      <input list="predicates" type="search" placeholder="Search..." id="search">
-      <datalist id="predicates"></datalist>      
-    </div>
+    <!-- Skip links for keyboard users -->
+    <a href="#content" class="skip-link">Skip to main content</a>
+    <a href="#navigation" class="skip-link">Skip to navigation</a>
+
+    <header class="topbar" role="banner">
+      <a class="topbarLink" href="{{ base_url }}" aria-label="Home">{{ project_name }}</a>
+      <form role="search" aria-label="Search predicates">
+        <label for="search" class="sr-only">Search predicates</label>
+        <input list="predicates" type="search" placeholder="Search..." id="search" name="search">
+        <datalist id="predicates"></datalist>
+      </form>
+    </header>
+    <div class = "layout">
     <div class="mainContent">
-      <nav>
-	<h4>Learn</h4>
-	{{ nav_learn }}
-	<h4>Libraries</h4>
-	{{ nav_lib }}
-      </nav>
-      <main>
-	{% block main %}{% endblock %}
+      <!-- ARIA landmark for skip-link target -->
+      <main id="content" role="main" aria-label="Main content">
+        {% block main %}{% endblock %}
       </main>
+
+ 
+    </div>
+     <nav id="navigation" role="navigation" aria-label="Main navigation">
+        <h2>Learn</h2>
+        {{ nav_learn }}
+        <h2>Libraries</h2>
+        {{ nav_lib }}
+      </nav>
     </div>
     {{ footer }}
-    <script src="{{ base_url }}doclog.js" async defer></script>    
+
+    <script src="{{ base_url }}doclog.js" async defer></script>
   </body>
 </html>
