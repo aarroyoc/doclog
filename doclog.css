@@ -55,6 +55,8 @@
   --link: var(--blue-strong);
   --link-hover: var(--blue-strong);
   --link-visited: var(--purple-visited);
+  --dark-link-visited: #7c6df0;
+
 
   /* Accents */
   --accent-primary: var(--blue-strong);
@@ -97,7 +99,7 @@
 
     --link: var(--dark-accent);
     --link-hover: var(--dark-accent);
-    --link-visited: var(--dark-accent);
+    --link-visited: var(--dark-link-visited);  
 
     --accent-primary: var(--dark-accent);
     --accent-strong: var(--dark-accent-strong);
