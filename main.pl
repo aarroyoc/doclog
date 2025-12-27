@@ -98,7 +98,7 @@ subnav(Base, Dir, ["name"-Dir, "nav"-Nav, "type"-"dir"]) :-
     files_not_omitted_files(RealDir, Files, FilesReal),
     sort(FilesReal, FilesSorted),
     maplist(subnav(DirSg), FilesSorted, Items),
-    render("nav.html", ["items"-Items], Nav).
+    render("nav_tree.html", ["items"-Items], Nav).
 
 subnav(Base, File, ["name"-Name, "link"-['/'|Link], "type"-"file"]) :-
     append(Base, [File], FileSg),
@@ -134,7 +134,7 @@ files_not_omitted_files(Base, [X|Xs], Ys) :-
 generate_nav_learn(NavLearn) :-
     learn_pages_categories(Categories),
     maplist(generate_nav_learn_cat, Categories, Items),
-    render("nav.html", ["items"-Items], NavLearn).
+    render("nav_tree.html", ["items"-Items], NavLearn).
 
 generate_nav_learn_cat(Category, SubNav) :-
     learn_pages(Pages),
@@ -146,7 +146,7 @@ generate_nav_learn_cat(Category, SubNav) :-
 		append("/learn/", File, Link),
 		Item = ["name"-Name, "link"-Link, "type"-"file"]
 	    ), Items),
-    render("nav.html", ["items"-Items], Text),
+    render("nav_tree.html", ["items"-Items], Text),
     SubNav = ["name"-Category, "nav"-Text, "type"-"dir"].
 
 generate_footer(Footer) :-
