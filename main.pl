@@ -17,12 +17,15 @@
 :- dynamic(output_folder/1).
 :- dynamic(source_folder/1).
 :- dynamic(base_url/1).
+:- dynamic(sitemap_url/1).
+
 
 run(SourceFolder, OutputFolder) :-
     catch((
         portray_color(blue, doclog(2, 2, 0)),
 	assertz(output_folder(OutputFolder)),
 	assertz(source_folder(SourceFolder)),
+    retractall(sitemap_url(_)),
 	path_segments(SourceFolder, S1),
 	append(S1, ["doclog.config.pl"], C1),
 	path_segments(ConfigFile, C1),
@@ -174,6 +177,8 @@ generate_page_learn_(Sections, LearnFolderSg, page(Name, Category, Source)) :-
     append(F1, ".html", F2),
     append(LearnFolderSg, [F2], O1),
     path_segments(OutputFile, O1),
+    append("/learn/", F2, LearnURL),
+    ( sitemap_url(LearnURL) -> true ; assertz(sitemap_url(LearnURL)) ),
     ( file_newer(SourceFile, OutputFile) ->
       portray_color(blue, skip_rendering_learn_page(Name, Category))
     ; portray_color(green, rendering_learn_page(Name, Category)),
@@ -184,6 +189,7 @@ generate_page_learn_(Sections, LearnFolderSg, page(Name, Category, Source)) :-
       render("learn.html", Vars, LearnHtml),
       phrase_to_file(seq(LearnHtml), OutputFile)
     ).
+
 
 generate_readme(Sections) :-
     source_folder(S1),
@@ -197,6 +203,7 @@ generate_readme(Sections) :-
     path_segments(OutputFolder, OutputFolderSg),
     append(OutputFolderSg, ["index.html"], OutputFileSg),
     path_segments(OutputFile, OutputFileSg),
+    ( sitemap_url("/index.html") -> true ; assertz(sitemap_url("/index.html")) ),
     ( file_newer(ReadmeFile, OutputFile) ->
       portray_color(blue, skip_readme)
     ; portray_color(green, readme),
@@ -227,10 +234,31 @@ generate_page_docs(Sections) :-
 		       ), close(SearchWriteStream)),
     append(Output, ["doclog.css"], F1),
     append(Output, ["doclog.js"], F2),
+    append(Output,["robots.txt"], F5),
     path_segments(F3, F1),
     path_segments(F4, F2),
+    path_segments(F6,F5),
     file_copy("doclog.css", F3),
-    file_copy("doclog.js", F4).
+    file_copy("doclog.js", F4),
+    file_copy("robots.txt", F6),
+    write_sitemap(Output).
+
+write_sitemap(OutputFolderSg) :-
+    append(OutputFolderSg, ["sitemap.xml"], SitemapSg),
+    path_segments(SitemapFile, SitemapSg),
+    setup_call_cleanup(
+        open(SitemapFile, write, S),
+        (
+            format(S, "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n", []),
+            format(S, "<urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\">\n", []),
+            forall(
+                sitemap_url(URL),
+                format(S, "  <url><loc>~s</loc></url>\n", [URL])
+            ),
+            format(S, "</urlset>\n", [])
+        ),
+        close(S)
+    ).
 
 process_file(Base, Output0, Sections, SearchWriteStream, File0) :-
     append(Base, [File0], FileSg),
@@ -240,20 +268,23 @@ process_file(Base, Output0, Sections, SearchWriteStream, File0) :-
     path_segments(Output, OutputSg),
     path_segments(File, FileSg),
     file_exists(File),
+    add_sitemap_url_from_output(Output),
+
     ( file_newer(File, Output) ->
       portray_color(blue, skip_file(File))
     ; portray_color(green, process_file(File)),
       open(File, read, FileStream),
       read_term(FileStream, Term, []),
       (
-	Term = (:- module(ModuleName, PublicPredicates)) ->
-	(
-	    predicates_clean(PublicPredicates, PublicPredicates1, Ops),
-	    document_file(File, Output, ModuleName, PublicPredicates1, Ops, Sections),
-	    append_predicates_search_index(Output, PublicPredicates1, Ops, SearchWriteStream)
-	)
+        Term = (:- module(ModuleName, PublicPredicates)) ->
+        (
+            predicates_clean(PublicPredicates, PublicPredicates1, Ops),
+            document_file(File, Output, ModuleName, PublicPredicates1, Ops, Sections),
+            append_predicates_search_index(Output, PublicPredicates1, Ops, SearchWriteStream)
+        )
       ; true
       ),
+
       close(FileStream)
     ).
 
@@ -289,6 +320,17 @@ append_search_index(Output, SearchWriteStream, op(_,_,Operator)) :-
     atom_chars(Operator, NameUnsafe),
     phrase(escape_js(Name), NameUnsafe),
     format(SearchWriteStream, "{\"link\": \"~s\", \"predicate\": \"~s\"},", [Output, Name]).
+
+add_sitemap_url_from_output(Output) :-
+    output_folder(OF),
+    append(OF, Relative, Output),
+    replace_char('\\', '/', Relative, Relative1),
+    ( Relative1 = ['/'|_] ->
+        URL = Relative1
+    ;   URL = ['/'|Relative1]
+    ),
+    ( sitemap_url(URL) -> true ; assertz(sitemap_url(URL)) ).
+
 
 escape_js([]) --> [].
 escape_js([X|Xs]) -->
