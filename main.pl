@@ -35,6 +35,12 @@ run(SourceFolder, OutputFolder) :-
 	generate_nav_learn(NavLearn),
 	generate_footer(Footer),
 	Sections = ["nav_lib"-NavLib, "nav_learn"-NavLearn, "footer"-Footer],
+    output_folder(OutputFolder),
+    path_segments(OutputFolder, O1),
+    append(O1, ["footer.html"], FooterOutSg),
+    path_segments(FooterOut, FooterOutSg),
+    phrase_to_file(seq(Footer), FooterOut),
+
 	generate_page_learn(Sections),
 	do_copy_files,
 	generate_page_docs(Sections),
@@ -232,6 +238,15 @@ generate_page_docs(Sections) :-
         maplist(process_file(Base, Output, Sections, SearchWriteStream), Files),
 	format(SearchWriteStream, "{}]", [])
 		       ), close(SearchWriteStream)),
+
+    % Render navmenu.html → nav_menu.html
+    Sections = ["nav_lib"-NavLib, "nav_learn"-NavLearn | _],
+    VarsNav = Sections,
+    render("navmenu.html", VarsNav, NavHtml),
+    append(Output, ["nav_menu.html"], NavOutSg),
+    path_segments(NavOut, NavOutSg),
+    phrase_to_file(seq(NavHtml), NavOut),
+
     append(Output, ["doclog.css"], F1),
     append(Output, ["doclog.js"], F2),
     append(Output,["robots.txt"], F5),

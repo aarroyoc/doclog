@@ -9,7 +9,8 @@
     <link rel="stylesheet" href="{{ base_url }}doclog.css"/>
     {% block extra_head %}{% endblock %}
   </head>
-  <body>
+  <body data-base-url="{{ base_url }}">
+
     <!-- Skip links for keyboard users -->
     <a href="#content" class="skip-link">Skip to main content</a>
     <a href="#navigation" class="skip-link">Skip to navigation</a>
@@ -31,15 +32,17 @@
 
  
     </div>
-     <nav id="navigation" role="navigation" aria-label="Main navigation">
-        <h2>Learn</h2>
-        {{ nav_learn }}
-        <h2>Libraries</h2>
-        {{ nav_lib }}
-      </nav>
+
+    <nav id="navigation" role="navigation" aria-label="Main navigation"></nav>
+
+
     </div>
-    {{ footer }}
+   <footer id="site-footer"></footer>
+
 
     <script src="{{ base_url }}doclog.js" async defer></script>
+ 
+
+
   </body>
 </html>
