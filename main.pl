@@ -20,7 +20,7 @@
 
 run(SourceFolder, OutputFolder) :-
     catch((
-        portray_color(blue, doclog(2, 2, 0)),
+        portray_color(blue, doclog(2, 3, 0)),
 	assertz(output_folder(OutputFolder)),
 	assertz(source_folder(SourceFolder)),
 	path_segments(SourceFolder, S1),
@@ -227,10 +227,16 @@ generate_page_docs(Sections) :-
 		       ), close(SearchWriteStream)),
     append(Output, ["doclog.css"], F1),
     append(Output, ["doclog.js"], F2),
+    append(Output, ["default.min.css"], F5),
+    append(Output, ["highlight.prolog.min.js"], F6),
     path_segments(F3, F1),
     path_segments(F4, F2),
+    path_segments(F7, F5),
+    path_segments(F8, F6),
     file_copy("doclog.css", F3),
-    file_copy("doclog.js", F4).
+    file_copy("doclog.js", F4),
+    file_copy("highlight.js/default.min.css", F7),
+    file_copy("highlight.js/highlight.prolog.min.js", F8).
 
 process_file(Base, Output0, Sections, SearchWriteStream, File0) :-
     append(Base, [File0], FileSg),
