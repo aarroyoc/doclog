@@ -20,7 +20,7 @@
 
 run(SourceFolder, OutputFolder) :-
     catch((
-        portray_color(blue, doclog(2, 3, 0)),
+        portray_color(blue, doclog(2, 3, 1)),
 	assertz(output_folder(OutputFolder)),
 	assertz(source_folder(SourceFolder)),
 	path_segments(SourceFolder, S1),
