@@ -35,19 +35,23 @@ run(SourceFolder, OutputFolder) :-
         atom_chars(ConfigFileA, ConfigFile),
         consult(ConfigFileA),
 
-        % Generate chrome
-        generate_nav_lib(NavLib),
-        generate_nav_learn(NavLearn),
-        generate_footer(Footer),
-        Sections = ["nav_lib"-NavLib, "nav_learn"-NavLearn],
+
 
         % Ensure output directory exists 
         make_directory_path(OutputFolder),
+                % Generate chrome
+        generate_nav_lib(NavLib),
+        generate_nav_learn(NavLearn),
+        generate_footer(Footer),
+        format("Generated navigation and footer.~n", []),
         % Build footer.html path using segments
         path_segments(OutputFolder, O1),
         append(O1, ["footer.html"], FooterOutSg),
         path_segments(FooterOut, FooterOutSg),
         phrase_to_file(seq(Footer), FooterOut),
+        format("Generated footer file.~n", []),
+
+        Sections = ["nav_lib"-NavLib, "nav_learn"-NavLearn,"footer"-Footer],
 
         % Build everything else
         generate_page_learn(Sections),
