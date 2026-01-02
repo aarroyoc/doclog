@@ -351,3 +351,52 @@ footer {
   text-align: center;
   margin-top: 2rem;
 }
+
+
+/* ---------------------------------------------------------
+   Highlight.js Prolog Syntax Mapping
+   --------------------------------------------------------- */
+
+/* Base HLJS container */
+.hljs {
+  background: var(--surface-2);
+  color: var(--text-primary);
+  font-family: "JetBrains Mono", Consolas, monospace;
+  padding: 1rem;
+  border-radius: var(--radius-small);
+  overflow-x: auto;
+}
+
+/* Prolog-specific mappings */
+.hljs-keyword      { color: var(--syntax-keyword); font-weight: bold; }
+.hljs-title        { color: var(--syntax-functor); font-weight: bold; }
+.hljs-symbol       { color: var(--syntax-variable); }
+.hljs-variable     { color: var(--syntax-variable); }
+.hljs-string       { color: var(--syntax-string); }
+.hljs-number       { color: var(--syntax-number); }
+.hljs-comment      { color: var(--syntax-comment); font-style: italic; }
+.hljs-operator     { color: var(--syntax-operator); }
+.hljs-punctuation  { color: var(--syntax-punctuation); }
+
+/* Optional: emphasize atoms differently */
+.hljs-atom         { color: var(--syntax-atom); }
+
+
+
+/* Dark mode overrides */
+@media (prefers-color-scheme: dark) {
+  .hljs {
+    background: var(--surface-2);
+    color: var(--text-primary);
+  }
+  .hljs-keyword      { color: var(--syntax-keyword); }
+  .hljs-title        { color: var(--syntax-functor); }
+  .hljs-symbol,
+  .hljs-variable     { color: var(--syntax-variable); }
+  .hljs-string       { color: var(--syntax-string); }
+  .hljs-number       { color: var(--syntax-number); }
+  .hljs-comment      { color: var(--syntax-comment); }
+  .hljs-operator     { color: var(--syntax-operator); }
+  .hljs-punctuation  { color: var(--syntax-punctuation); }
+  .hljs-atom         { color: var(--syntax-atom); }
+}
