@@ -285,10 +285,8 @@ generate_page_docs(Sections) :-
 write_sitemap(OutputFolderPath) :-
     append(OutputFolderPath, "/sitemap.xml", SitemapPath),
 	findall(S,sitemap_url(S),URLs),
-	format("URLs ~w ~n",[URLs] ),
-    phrase_to_file(sitemap_xml(URLs), SitemapPath),
-	format("Wrote URLs ~n",[]).
-
+    phrase_to_file(sitemap_xml(URLs), SitemapPath).
+	
 sitemap_xml(URLs) -->
     "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n",
     "<urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\">\n",
