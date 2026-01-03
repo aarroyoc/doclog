@@ -20,10 +20,8 @@
 :- dynamic(sitemap_url/1).
 
 run(SourceFolder, OutputFolder) :-
-	catch((
-	portray_color(blue, doclog(2, 2, 0)),
-
-	% Store as given (strings)
+    catch((
+        portray_color(blue, doclog(2, 3, 1)),
 	assertz(output_folder(OutputFolder)),
 	assertz(source_folder(SourceFolder)),
 	retractall(sitemap_url(_)),
@@ -263,17 +261,22 @@ generate_page_docs(Sections) :-
     append(Output, ["nav_menu.html"], NavOutSg),
     path_segments(NavOut, NavOutSg),
     phrase_to_file(seq(NavHtml), NavOut),
-
     append(Output, ["doclog.css"], F1),
     append(Output, ["doclog.js"], F2),
-    append(Output,["robots.txt"], F5),
+    append(Output, ["default.min.css"], F5),
+    append(Output, ["highlight.prolog.min.js"], F6),
+	append(Output,["robots.txt"], F25),
+	path_segments(F26,F25),
     path_segments(F3, F1),
     path_segments(F4, F2),
-    path_segments(F6,F5),
+    path_segments(F7, F5),
+    path_segments(F8, F6),
     file_copy("doclog.css", F3),
     file_copy("doclog.js", F4),
-    file_copy("robots.txt", F6),
-    write_sitemap(Output).
+    file_copy("highlight.js/default.min.css", F7),
+    file_copy("highlight.js/highlight.prolog.min.js", F8),
+    file_copy("robots.txt", F26),
+	write_sitemap(OutputFolder).	
 
 write_sitemap(OutputFolderSg) :-
     append(OutputFolderSg, ["sitemap.xml"], SitemapSg),

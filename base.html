@@ -6,14 +6,16 @@
     <meta name="keywords" content="Prolog, Scryer Prolog, logic programming, Prolog tutorials, Prolog libraries">
     <meta name="description" content="{{ project_name }} documentation and learning resources"/>
     <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <link rel="stylesheet" href="{{ base_url }}default.min.css">
     <link rel="stylesheet" href="{{ base_url }}doclog.css"/>
+    <script src="{{ base_url }}highlight.prolog.min.js"></script>
     {% block extra_head %}{% endblock %}
   </head>
   <body data-base-url="{{ base_url }}">
 
     <!-- Skip links for keyboard users -->
-    <a href="#content" class="skip-link">Skip to main content</a>
-    <a href="#navigation" class="skip-link">Skip to navigation</a>
+    <a href="#content" class="skip-link skip-to-content">Skip to main content</a>
+    <a href="#navigation" class="skip-link skip-to-nav">Skip to navigation</a>
 
     <header class="topbar" role="banner">
       <a class="topbarLink" href="{{ base_url }}" aria-label="Home">{{ project_name }}</a>

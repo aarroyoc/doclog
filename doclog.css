@@ -1,35 +1,221 @@
-/* Base typography and layout */
-body {
-  font-family:  sans-serif;
-  margin: 1rem;
-  line-height: 1.0;
-  color: #000;
-  background: #fff;
+/* ---------------------------------------------------------
+   RAW TOKENS (physical colors)
+   --------------------------------------------------------- */
+:root {
+  /* Core palette */
+  --blue-strong: #00007f;
+  --blue-light: #dfdfff;
+  --blue-lighter: #efefff;
 
+  --purple-visited: #5a3fd9;
+
+  --light-bg: #fff;
+  --light-text: #000;
+
+  --dark-bg: #121212;
+  --dark-text: #e0e0e0;
+
+  --dark-accent-strong: #1e3a8a;
+  --dark-accent: #80cbc4;
+
+  --dark-surface-odd: #1e1e2f;
+  --dark-surface-even: #2a2a3f;
+
+  --code-bg-light: #f6f8fa;
+  --code-border-light: #e0e0e0;
+
+  /* Radii */
+  --radius-small: 0.25rem;
+  --radius-medium: 0.5rem;
 }
-.layout{
-  display:flex;
+
+/* ---------------------------------------------------------
+   SEMANTIC TOKENS (meaning-based)
+   --------------------------------------------------------- */
+:root {
+  /* Surfaces */
+  --surface-1: var(--light-bg);          /* main background */
+  --surface-2: var(--code-bg-light);     /* code blocks, elevated surfaces */
+  --surface-3: var(--blue-light);        /* subtle highlight */
+
+  /* Table surfaces */
+  --surface-table-odd: var(--surface-3);
+  --surface-table-even: var(--surface-2);
+
+  /* Text */
+  --text-primary: var(--light-text);
+  --text-secondary: #555;
+  --text-inverse: #fff;
+
+  /* Borders */
+  --border-strong: var(--blue-strong);
+  --border-subtle: var(--code-border-light);
+
+  /* Links */
+  --link: var(--blue-strong);
+  --link-hover: var(--blue-strong);
+  --link-visited: var(--purple-visited);
+  --dark-link-visited: #7c6df0;
+
+
+  /* Accents */
+  --accent-primary: var(--blue-strong);
+  --accent-strong: var(--blue-strong);
+}
+/* ---------------------------------------------------------
+   SEMANTIC TOKENS — SYNTAX HIGHLIGHTING (future-proof)
+   --------------------------------------------------------- */
+:root {
+  /* Prolog syntax roles */
+  --syntax-keyword: #00007f;        /* e.g., :-, ->, is, not, etc. */
+  --syntax-atom: #7f0055;           /* atoms, functors without args */
+  --syntax-functor: #005f7f;        /* predicate names */
+  --syntax-string: #007f00;         /* "hello", 'world' */
+  --syntax-number: #7f3f00;         /* 123, 3.14 */
+  --syntax-variable: #5f00af;       /* X, Y, VarName */
+  --syntax-comment: #777;           /* % comment */
+  --syntax-operator: #333;          /* +, -, *, /, =.., etc. */
+  --syntax-punctuation: #555;       /* commas, parentheses */
+}
+
+/* ---------------------------------------------------------
+   DARK MODE SEMANTIC OVERRIDES
+   --------------------------------------------------------- */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --surface-1: var(--dark-bg);
+    --surface-2: var(--dark-surface-odd);
+    --surface-3: var(--dark-surface-even);
+    --surface-table-odd: var(--surface-3);
+    --surface-table-even: var(--surface-2);
+
+
+    --text-primary: var(--dark-text);
+    --text-secondary: #aaa;
+    --text-inverse: #000;
+
+    --border-strong: var(--dark-accent-strong);
+    --border-subtle: var(--dark-surface-even);
+
+    --link: var(--dark-accent);
+    --link-hover: var(--dark-accent);
+    --link-visited: var(--dark-link-visited);  
+
+    --accent-primary: var(--dark-accent);
+    --accent-strong: var(--dark-accent-strong);
+  }
+  :root {
+    --syntax-keyword: #80cbc4;
+    --syntax-atom: #ff79c6;
+    --syntax-functor: #82aaff;
+    --syntax-string: #c3e88d;
+    --syntax-number: #f78c6c;
+    --syntax-variable: #c792ea;
+    --syntax-comment: #888;
+    --syntax-operator: #ccc;
+    --syntax-punctuation: #aaa;
+  }
+ 
+}
+
+/* ---------------------------------------------------------
+   BASE TYPOGRAPHY & LAYOUT
+   --------------------------------------------------------- */
+body {
+  font-family: sans-serif;
+  margin: 1rem;
+  line-height: 1.5;
+  color: var(--text-primary);
+  background: var(--surface-1);
+}
+
+code, pre {
+  font-family: "JetBrains Mono", Consolas, monospace;
+}
+
+pre {
+  background: var(--surface-2);
+  border: 1px solid var(--border-subtle);
+  padding: 1rem;
+  overflow-x: auto;
+  border-radius: var(--radius-small);
+}
+
+code {
+  background: var(--surface-2);
+  padding: 0.1rem 0.25rem;
+  border-radius: var(--radius-medium);
+}
+
+table {
+  border: 2px solid var(--border-strong);
+  border-radius: var(--radius-medium);
+  border-collapse: collapse;
+}
+
+tbody tr:nth-child(odd) {
+  background-color: var(--surface-table-odd);
+}
+
+tbody tr:nth-child(even) {
+  background-color: var(--surface-table-even);
+}
+
+
+th, td {
+  padding: 0.25rem 0.75rem;
+}
+
+/* ---------------------------------------------------------
+   LAYOUT STRUCTURE
+   --------------------------------------------------------- */
+.layout {
+  display: flex;
   flex-direction: row;
   align-items: flex-start;
 }
 
 .mainContent {
-    flex:1;
-    padding : 1rem;
-    order:2;
+  flex: 1;
+  padding: 1rem;
+  order: 2;
 }
 
 #navigation {
-  flex: 0 1 auto;         /* allow shrinking */
+  flex: 0 1 auto;
   margin-left: 1rem;
   order: 1;
   max-width: 20rem;
-  min-width: 12rem;         /* don’t shrink too far */
-  width: 18vw;              /* scale with viewport */
+  min-width: 12rem;
+  width: 18vw;
   word-wrap: break-word;
 }
+#navigation a:visited {
+  color: inherit;
+}
 
-/* Accessibility: visually hidden but screen reader accessible */
+/* Responsive */
+@media (max-width: 768px) {
+  .layout {
+    flex-direction: column;
+  }
+  .mainContent {
+    order: 1;
+  }
+  #navigation {
+    order: 2;
+    margin-left: 0;
+    margin-top: 1rem;
+    max-width: 100%;
+  }
+
+
+
+}
+
+/* ---------------------------------------------------------
+   ACCESSIBILITY
+   --------------------------------------------------------- */
 .sr-only {
   position: absolute;
   width: 1px;
@@ -38,73 +224,63 @@ body {
   margin: -1px;
   overflow: hidden;
   clip: rect(0, 0, 0, 0);
-  white-space: nowrap; /* prevent line breaks */
+  white-space: nowrap;
   border: 0;
 }
-
-
-/* Responsive adjustments for tablets and mobile */
-@media (max-width: 768px) {
-  .layout {
-    flex-direction: column;
-  }
-
-  .mainContent {
-    order: 1;
-  }
-
-  #navigation {
-    order: 2;
-    margin-left: 0;
-    margin-top: 1rem;
-    max-width: 100%;
-  }
+a {
+    color: var(--link);
 }
-
-
-
-
-/* Main content area */
-main {
-  order: 2;              /* content second visually */
-  flex: 3;               /* take more space */
-  max-width: 60rem;
-}
-
-/* Ensure focus visibility for accessibility */
 a:focus, button:focus, input:focus {
-  outline: 2px solid #00007f;
+  outline: 2px solid var(--accent-primary);
   outline-offset: 2px;
 }
 
-
-.moduleDescription {
-    margin: 2rem;
+a:hover {
+  text-decoration: underline;
 }
-/* Predicate styling */
+
+a:visited {
+  color: var(--link-visited);
+}
+
+#navigation a:visited {
+  color: var(--link);
+}
+
+/* ---------------------------------------------------------
+   COMPONENTS
+   --------------------------------------------------------- */
+.moduleDescription {
+  margin: 2rem;
+}
+
 .predicates {
   margin: 1rem;
 }
 
 .predicate > h4 {
-  background-color: #00007f;
-  color: #fff;
+  background-color: var(--accent-primary);
+  color: var(--text-inverse);
   padding: 0.16rem;
+  border-radius: var(--radius-small);
 }
+
 .predicate > div {
-    margin: 0.5rem;
+  margin: 0.5rem;
 }
-/* Navigation lists */
+
+.predicate > p {
+  margin: 0.5rem;
+}
+
 .navlist {
   list-style-type: none;
-  padding-left: 1.5rem; 
-  margin : 0.
+  padding-left: 1.5rem;
+  margin: 0;
 }
+
 .navlist li {
   margin: 0.25rem 0;
-}
-.navlist ul.navlist {
-  padding-left: 1.5rem;
 }
 
 details summary {
@@ -112,50 +288,23 @@ details summary {
   font-weight: bold;
 }
 
-
-/* Topbar styling */
+/* Topbar */
 .topbar {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border-bottom: solid #00007f 10px;
+  border-bottom: solid var(--accent-primary) 10px;
   min-height: 4rem;
 }
 
 .topbarLink {
   text-decoration: none;
-  color: black;
+  color: var(--text-primary);
   font-size: 2rem;
   font-weight: bold;
 }
 
-
-
-
-.predicate > p {
-  margin: 0.5rem;
-}
-
-/* Tables */
-table {
-  border: 2px solid #00007f;
-  border-radius: 0.25rem;
-  border-collapse: collapse;
-}
-
-tbody tr:nth-child(odd) {
-  background-color: #dfdfff;
-}
-
-tbody tr:nth-child(even) {
-  background-color: #efefff;
-}
-
-th, td {
-  padding: 0.25rem 0.75rem;
-}
-
-/* Skip link styling */
+/* Skip link */
 .skip-link {
   position: absolute;
   left: -999px;
@@ -163,58 +312,91 @@ th, td {
   width: 1px;
   height: 1px;
   overflow: hidden;
+
+}
+.skip-to-nav {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .skip-to-nav {
+    position:static;
+    left:auto;
+    width: auto;
+    height: auto;
+    display: inline-block;
+    overflow:visible;
+  }
 }
 
 .skip-link:focus {
-  position: static;
+  position: fixed;
+  top: 0.5rem;
+  left: 0.5rem;
   width: auto;
   height: auto;
-  margin: 0.5rem;
+  margin: 0;
   padding: 0.5rem 1rem;
-  background: #00007f;
-  color: #fff;
-  z-index: 1000;
+  background: var(--accent-primary);
+  color: var(--text-inverse);
+  z-index: 10000;
+  border-radius: var(--radius-small);
+  z-index: 2147483647;
+  overflow: visible;
 }
+
 
 /* Footer */
 footer {
   text-align: center;
   margin-top: 2rem;
-
 }
-/* Dark mode support */
-@media (prefers-color-scheme: dark) {
-  body {
-    background: #121212;
-    color: #e0e0e0;
-  }
-  h1, h2, h3, h4, h5, h6 {
-    color: #e0e0e0;   /* match body text */
-  }
- .predicate > h4 {
-    background-color: #1e3a8a;
-  }
 
-  a {
-    color: #80cbc4;
+
+/* ---------------------------------------------------------
+   Highlight.js Prolog Syntax Mapping
+   --------------------------------------------------------- */
+
+/* Base HLJS container */
+.hljs {
+  background: var(--surface-2);
+  color: var(--text-primary);
+  font-family: "JetBrains Mono", Consolas, monospace;
+  padding: 1rem;
+  border-radius: var(--radius-small);
+  overflow-x: auto;
+}
+
+/* Prolog-specific mappings */
+.hljs-keyword      { color: var(--syntax-keyword); font-weight: bold; }
+.hljs-title        { color: var(--syntax-functor); font-weight: bold; }
+.hljs-symbol       { color: var(--syntax-variable); }
+.hljs-variable     { color: var(--syntax-variable); }
+.hljs-string       { color: var(--syntax-string); }
+.hljs-number       { color: var(--syntax-number); }
+.hljs-comment      { color: var(--syntax-comment); font-style: italic; }
+.hljs-operator     { color: var(--syntax-operator); }
+.hljs-punctuation  { color: var(--syntax-punctuation); }
+
+/* Optional: emphasize atoms differently */
+.hljs-atom         { color: var(--syntax-atom); }
+
+
+
+/* Dark mode overrides */
+@media (prefers-color-scheme: dark) {
+  .hljs {
+    background: var(--surface-2);
+    color: var(--text-primary);
   }
-  .topbar {
-    border-bottom: solid #1e3a8a 10px;
-  }
-  .topbarLink {
-    color: #e0e0e0;  /* match body text */
-  }
-  
-  .predicate > h3 {
-    background-color: #1e3a8a;
-  }
-  table {
-    border-color: #1e3a8a;
-  }
-  tbody tr:nth-child(odd) {
-    background-color: #1e1e2f;
-  }
-  tbody tr:nth-child(even) {
-    background-color: #2a2a3f;
-  }
+  .hljs-keyword      { color: var(--syntax-keyword); }
+  .hljs-title        { color: var(--syntax-functor); }
+  .hljs-symbol,
+  .hljs-variable     { color: var(--syntax-variable); }
+  .hljs-string       { color: var(--syntax-string); }
+  .hljs-number       { color: var(--syntax-number); }
+  .hljs-comment      { color: var(--syntax-comment); }
+  .hljs-operator     { color: var(--syntax-operator); }
+  .hljs-punctuation  { color: var(--syntax-punctuation); }
+  .hljs-atom         { color: var(--syntax-atom); }
 }
