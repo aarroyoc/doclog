@@ -23,44 +23,44 @@ run(SourceFolder, OutputFolder) :-
     catch((
         portray_color(blue, doclog(2, 2, 0)),
 
-        % Store as given (strings)
-        assertz(output_folder(OutputFolder)),
-        assertz(source_folder(SourceFolder)),
-        retractall(sitemap_url(_)),
+    % Store as given (strings)
+    assertz(output_folder(OutputFolder)),
+    assertz(source_folder(SourceFolder)),
+    retractall(sitemap_url(_)),
 
-        % Load config file
-        path_segments(SourceFolder, S1),
-        append(S1, ["doclog.config.pl"], C1),
-        path_segments(ConfigFile, C1),
-        atom_chars(ConfigFileA, ConfigFile),
-        consult(ConfigFileA),
+    % Load config file
+    path_segments(SourceFolder, S1),
+    append(S1, ["doclog.config.pl"], C1),
+    path_segments(ConfigFile, C1),
+    atom_chars(ConfigFileA, ConfigFile),
+    consult(ConfigFileA),
 
 
 
-        % Ensure output directory exists 
-        make_directory_path(OutputFolder),
-                % Generate chrome
-        generate_nav_lib(NavLib),
-        generate_nav_learn(NavLearn),
-        generate_footer(Footer),
-        format("Generated navigation and footer.~n", []),
-        % Build footer.html path using segments
-        path_segments(OutputFolder, O1),
-        append(O1, ["footer.html"], FooterOutSg),
-        path_segments(FooterOut, FooterOutSg),
-        phrase_to_file(seq(Footer), FooterOut),
-        format("Generated footer file.~n", []),
+    % Ensure output directory exists 
+    make_directory_path(OutputFolder),
+            % Generate chrome
+    generate_nav_lib(NavLib),
+    generate_nav_learn(NavLearn),
+    generate_footer(Footer),
+    format("Generated navigation and footer.~n", []),
+    % Build footer.html path using segments
+    path_segments(OutputFolder, O1),
+    append(O1, ["footer.html"], FooterOutSg),
+    path_segments(FooterOut, FooterOutSg),
+    phrase_to_file(seq(Footer), FooterOut),
+    format("Generated footer file.~n", []),
 
-        Sections = ["nav_lib"-NavLib, "nav_learn"-NavLearn,"footer"-Footer],
+    Sections = ["nav_lib"-NavLib, "nav_learn"-NavLearn,"footer"-Footer],
 
-        % Build everything else
-        generate_page_learn(Sections),
-        do_copy_files,
-        generate_page_docs(Sections),
-        generate_readme(Sections),
+    % Build everything else
+    generate_page_learn(Sections),
+    do_copy_files,
+    generate_page_docs(Sections),
+    generate_readme(Sections),
 
-        portray_color(green, done),
-        halt
+    portray_color(green, done),
+    halt
     ),
     Error,
     (write(Error), nl, halt(1))).
