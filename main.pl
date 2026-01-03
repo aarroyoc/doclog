@@ -54,8 +54,11 @@ run(SourceFolder, OutputFolder) :-
 	% Build everything else
 	generate_page_learn(Sections),
 	do_copy_files,
+	format("Generating Page Docs...~n", []),
 	generate_page_docs(Sections),
+	format("Generating Readme...~n", []),
 	generate_readme(Sections),
+	format("Generated Readme...~n", []),
 
 	portray_color(green, done),
 	halt
@@ -278,11 +281,13 @@ generate_page_docs(Sections) :-
     file_copy("robots.txt", F26),
 	write_sitemap(OutputFolder).	
 
-write_sitemap(OutputFolderSg) :-
-    append(OutputFolderSg, ["sitemap.xml"], SitemapSg),
-    path_segments(SitemapFile, SitemapSg),
+write_sitemap(OutputFolderPath) :-
+	format("Write sitemap to folder... ~w ~n", [OutputFolderPath] ),
+    append(OutputFolderPath, "/sitemap.xml", SitemapPath),
+	format("SitemapPath ~w ~n",[SitemapPath] ),
+	format("Wrtiting sitemap to ~s~n", [SitemapPath]),	
     setup_call_cleanup(
-        open(SitemapFile, write, S),
+        open(SitemapPath, write, S),
         (
             format(S, "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n", []),
             format(S, "<urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\">\n", []),
