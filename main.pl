@@ -17,27 +17,54 @@
 :- dynamic(output_folder/1).
 :- dynamic(source_folder/1).
 :- dynamic(base_url/1).
+:- dynamic(sitemap_url/1).
 
 run(SourceFolder, OutputFolder) :-
     catch((
         portray_color(blue, doclog(2, 3, 1)),
 	assertz(output_folder(OutputFolder)),
 	assertz(source_folder(SourceFolder)),
+	retractall(sitemap_url(_)),
+
+	% Load config file
 	path_segments(SourceFolder, S1),
 	append(S1, ["doclog.config.pl"], C1),
 	path_segments(ConfigFile, C1),
 	atom_chars(ConfigFileA, ConfigFile),
 	consult(ConfigFileA),
+
+
+
+	% Ensure output directory exists 
+	make_directory_path(OutputFolder),
+	% Generate chrome
 	generate_nav_lib(NavLib),
 	generate_nav_learn(NavLearn),
 	generate_footer(Footer),
-	Sections = ["nav_lib"-NavLib, "nav_learn"-NavLearn, "footer"-Footer],
+	format("Generated navigation and footer.~n", []),
+	% Build footer.html path using segments
+	path_segments(OutputFolder, O1),
+	append(O1, ["footer.html"], FooterOutSg),
+	path_segments(FooterOut, FooterOutSg),
+	phrase_to_file(seq(Footer), FooterOut),
+	format("Generated footer file.~n", []),
+
+	Sections = ["nav_lib"-NavLib, "nav_learn"-NavLearn,"footer"-Footer],
+
+	% Build everything else
 	generate_page_learn(Sections),
 	do_copy_files,
+	format("Generating Page Docs...~n", []),
 	generate_page_docs(Sections),
+	format("Generating Readme...~n", []),
 	generate_readme(Sections),
-        portray_color(green, done),
-	halt), Error, (write(Error), nl, halt(1))).
+	format("Generated Readme...~n", []),
+
+	portray_color(green, done),
+	halt
+	),
+	Error,
+    (write(Error), nl, halt(1))).
 
 docs_base_url(BaseURL) :-
     ( base_url(X) ->
@@ -95,7 +122,7 @@ subnav(Base, Dir, ["name"-Dir, "nav"-Nav, "type"-"dir"]) :-
     files_not_omitted_files(RealDir, Files, FilesReal),
     sort(FilesReal, FilesSorted),
     maplist(subnav(DirSg), FilesSorted, Items),
-    render("nav.html", ["items"-Items], Nav).
+    render("nav_tree.html", ["items"-Items], Nav).
 
 subnav(Base, File, ["name"-Name, "link"-['/'|Link], "type"-"file"]) :-
     append(Base, [File], FileSg),
@@ -131,7 +158,7 @@ files_not_omitted_files(Base, [X|Xs], Ys) :-
 generate_nav_learn(NavLearn) :-
     learn_pages_categories(Categories),
     maplist(generate_nav_learn_cat, Categories, Items),
-    render("nav.html", ["items"-Items], NavLearn).
+    render("nav_tree.html", ["items"-Items], NavLearn).
 
 generate_nav_learn_cat(Category, SubNav) :-
     learn_pages(Pages),
@@ -143,7 +170,7 @@ generate_nav_learn_cat(Category, SubNav) :-
 		append("/learn/", File, Link),
 		Item = ["name"-Name, "link"-Link, "type"-"file"]
 	    ), Items),
-    render("nav.html", ["items"-Items], Text),
+    render("nav_tree.html", ["items"-Items], Text),
     SubNav = ["name"-Category, "nav"-Text, "type"-"dir"].
 
 generate_footer(Footer) :-
@@ -174,6 +201,8 @@ generate_page_learn_(Sections, LearnFolderSg, page(Name, Category, Source)) :-
     append(F1, ".html", F2),
     append(LearnFolderSg, [F2], O1),
     path_segments(OutputFile, O1),
+    append("/learn/", F2, LearnURL),
+    ( sitemap_url(LearnURL) -> true ; assertz(sitemap_url(LearnURL)) ),
     ( file_newer(SourceFile, OutputFile) ->
       portray_color(blue, skip_rendering_learn_page(Name, Category))
     ; portray_color(green, rendering_learn_page(Name, Category)),
@@ -184,6 +213,7 @@ generate_page_learn_(Sections, LearnFolderSg, page(Name, Category, Source)) :-
       render("learn.html", Vars, LearnHtml),
       phrase_to_file(seq(LearnHtml), OutputFile)
     ).
+
 
 generate_readme(Sections) :-
     source_folder(S1),
@@ -197,6 +227,7 @@ generate_readme(Sections) :-
     path_segments(OutputFolder, OutputFolderSg),
     append(OutputFolderSg, ["index.html"], OutputFileSg),
     path_segments(OutputFile, OutputFileSg),
+    ( sitemap_url("/index.html") -> true ; assertz(sitemap_url("/index.html")) ),
     ( file_newer(ReadmeFile, OutputFile) ->
       portray_color(blue, skip_readme)
     ; portray_color(green, readme),
@@ -225,10 +256,20 @@ generate_page_docs(Sections) :-
         maplist(process_file(Base, Output, Sections, SearchWriteStream), Files),
 	format(SearchWriteStream, "{}]", [])
 		       ), close(SearchWriteStream)),
+
+    % Render navmenu.html → nav_menu.html
+    Sections = ["nav_lib"-NavLib, "nav_learn"-NavLearn | _],
+    VarsNav = Sections,
+    render("navmenu.html", VarsNav, NavHtml),
+    append(Output, ["nav_menu.html"], NavOutSg),
+    path_segments(NavOut, NavOutSg),
+    phrase_to_file(seq(NavHtml), NavOut),
     append(Output, ["doclog.css"], F1),
     append(Output, ["doclog.js"], F2),
     append(Output, ["default.min.css"], F5),
     append(Output, ["highlight.prolog.min.js"], F6),
+	append(Output,["robots.txt"], F25),
+	path_segments(F26,F25),
     path_segments(F3, F1),
     path_segments(F4, F2),
     path_segments(F7, F5),
@@ -236,7 +277,28 @@ generate_page_docs(Sections) :-
     file_copy("doclog.css", F3),
     file_copy("doclog.js", F4),
     file_copy("highlight.js/default.min.css", F7),
-    file_copy("highlight.js/highlight.prolog.min.js", F8).
+    file_copy("highlight.js/highlight.prolog.min.js", F8),
+    file_copy("robots.txt", F26),
+	write_sitemap(OutputFolder).	
+
+
+write_sitemap(OutputFolderPath) :-
+    append(OutputFolderPath, "/sitemap.xml", SitemapPath),
+	findall(S,sitemap_url(S),URLs),
+    phrase_to_file(sitemap_xml(URLs), SitemapPath).
+	
+sitemap_xml(URLs) -->
+    "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n",
+    "<urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\">\n",
+    sitemap_urls(URLs),
+    "</urlset>\n".
+
+sitemap_urls([URL|URLs]) -->
+    "  <url><loc>", URL, "</loc></url>\n",
+    sitemap_urls(URLs).
+
+sitemap_urls([]) --> [].
+
 
 process_file(Base, Output0, Sections, SearchWriteStream, File0) :-
     append(Base, [File0], FileSg),
@@ -246,20 +308,23 @@ process_file(Base, Output0, Sections, SearchWriteStream, File0) :-
     path_segments(Output, OutputSg),
     path_segments(File, FileSg),
     file_exists(File),
+    add_sitemap_url_from_output(Output),
+
     ( file_newer(File, Output) ->
       portray_color(blue, skip_file(File))
     ; portray_color(green, process_file(File)),
       open(File, read, FileStream),
       read_term(FileStream, Term, []),
       (
-	Term = (:- module(ModuleName, PublicPredicates)) ->
-	(
-	    predicates_clean(PublicPredicates, PublicPredicates1, Ops),
-	    document_file(File, Output, ModuleName, PublicPredicates1, Ops, Sections),
-	    append_predicates_search_index(Output, PublicPredicates1, Ops, SearchWriteStream)
-	)
+        Term = (:- module(ModuleName, PublicPredicates)) ->
+        (
+            predicates_clean(PublicPredicates, PublicPredicates1, Ops),
+            document_file(File, Output, ModuleName, PublicPredicates1, Ops, Sections),
+            append_predicates_search_index(Output, PublicPredicates1, Ops, SearchWriteStream)
+        )
       ; true
       ),
+
       close(FileStream)
     ).
 
@@ -295,6 +360,17 @@ append_search_index(Output, SearchWriteStream, op(_,_,Operator)) :-
     atom_chars(Operator, NameUnsafe),
     phrase(escape_js(Name), NameUnsafe),
     format(SearchWriteStream, "{\"link\": \"~s\", \"predicate\": \"~s\"},", [Output, Name]).
+
+add_sitemap_url_from_output(Output) :-
+    output_folder(OF),
+    append(OF, Relative, Output),
+    replace_char('\\', '/', Relative, Relative1),
+    ( Relative1 = ['/'|_] ->
+        URL = Relative1
+    ;   URL = ['/'|Relative1]
+    ),
+    ( sitemap_url(URL) -> true ; assertz(sitemap_url(URL)) ).
+
 
 escape_js([]) --> [].
 escape_js([X|Xs]) -->
