@@ -281,24 +281,26 @@ generate_page_docs(Sections) :-
     file_copy("robots.txt", F26),
 	write_sitemap(OutputFolder).	
 
+
 write_sitemap(OutputFolderPath) :-
-	format("Write sitemap to folder... ~w ~n", [OutputFolderPath] ),
     append(OutputFolderPath, "/sitemap.xml", SitemapPath),
-	format("SitemapPath ~w ~n",[SitemapPath] ),
-	format("Wrtiting sitemap to ~s~n", [SitemapPath]),	
-    setup_call_cleanup(
-        open(SitemapPath, write, S),
-        (
-            format(S, "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n", []),
-            format(S, "<urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\">\n", []),
-            forall(
-                sitemap_url(URL),
-                format(S, "  <url><loc>~s</loc></url>\n", [URL])
-            ),
-            format(S, "</urlset>\n", [])
-        ),
-        close(S)
-    ).
+	findall(S,sitemap_url(S),URLs),
+	format("URLs ~w ~n",[URLs] ),
+    phrase_to_file(sitemap_xml(URLs), SitemapPath),
+	format("Wrote URLs ~n",[]).
+
+sitemap_xml(URLs) -->
+    "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n",
+    "<urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\">\n",
+    sitemap_urls(URLs),
+    "</urlset>\n".
+
+sitemap_urls([URL|URLs]) -->
+    "  <url><loc>", URL, "</loc></url>\n",
+    sitemap_urls(URLs).
+
+sitemap_urls([]) --> [].
+
 
 process_file(Base, Output0, Sections, SearchWriteStream, File0) :-
     append(Base, [File0], FileSg),
