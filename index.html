@@ -1,3 +1,9 @@
 {% extends "base.html" %}
+
+{% block extra_head %}
+    <link rel="sitemap" type="application/xml" href="/sitemap.xml">
+{% endblock %}
+
+
 {% block title %}{{ project_name }}{% endblock %}
 {% block main %}{{ readme }}{% endblock %}
