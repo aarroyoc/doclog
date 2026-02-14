@@ -1,18 +1,38 @@
 {% extends "base.html" %}
 
+{% block extra_head %}
+ 
+    <meta property="og:title" content="Module {{ module_name }} - {{ project_name }} documentation" />
+    <meta property="og:image" content="{{ base_url }}/scryer.png" />
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="en_US" />
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary" />    
+    <meta name="twitter:title" content="Module {{ module_name }} - {{ project_name }}" />
+
+    <meta name="twitter:image" content="{{ base_url }}scryer.png" />
+
+{% endblock %}
 
 {% block title %}Module {{ module_name }} - {{ project_name }} documentation{% endblock %}
 {% block main %}
   <section itemscope itemtype="http://schema.org/SoftwareSourceCode">
+  <link itemprop="isPartOf"
+      href="{{ base_url }}" />
+      
+    <meta  itemprop="image" content="{{ base_url }}scryer.png"  />
   <h1 itemprop="name">Module {{ module_name }}</h1>
+
   <pre><code>:- use_module(library({{ library }})).</code></pre>
   <div itemprop="description" class="moduleDescription">{{ module_description }}</div>
   <meta itemprop="programmingLanguage" content="Prolog" />
-  <meta itemprop="keywords" content="Prolog, Scryer Prolog, {{ module_name }}, predicates">
+  <meta itemprop="keywords" content="Prolog, Scryer Prolog, {{ module_name }} ">
 
   <div class="source">
     <a itemprop="codeRepository" href="{{ websource }}">Browse source code</a>
   </div>
+
+  
 
 <div class="predicates"
      itemscope
