@@ -1,19 +1,39 @@
 {% extends "base.html" %}
+
+
 {% block title %}Module {{ module_name }} - {{ project_name }} documentation{% endblock %}
 {% block main %}
-  <h1>Module {{ module_name }}</h1>
+  <section itemscope itemtype="http://schema.org/SoftwareSourceCode">
+  <h1 itemprop="name">Module {{ module_name }}</h1>
   <pre><code>:- use_module(library({{ library }})).</code></pre>
-  <div class="moduleDescription">{{ module_description }}</div>
+  <div itemprop="description" class="moduleDescription">{{ module_description }}</div>
+  <meta itemprop="programmingLanguage" content="Prolog" />
+  <meta itemprop="keywords" content="Prolog, Scryer Prolog, {{ module_name }}, predicates">
+
   <div class="source">
-    <a href="{{ websource }}">Browse source code</a>
+    <a itemprop="codeRepository" href="{{ websource }}">Browse source code</a>
   </div>
 
-    <div class="predicates">
+<div class="predicates"
+     itemscope
+     itemtype="http://schema.org/DefinedTermSet">
+
       {% for predicate in predicates %}
-  <div class="predicate" id="{{ predicate.predicate }}">
-	<h4>{{ predicate.name }}</h4>
-	<div>{{ predicate.description }}</div>
+
+
+  <div class="predicate"
+    id="{{ predicate.predicate }}" 
+    itemscope 
+    itemtype="http://schema.org/DefinedTerm" 
+    itemprop="hasDefinedTerm" >
+
+      <meta itemprop="identifier" content="{{ predicate.name }}">
+      <meta itemprop="url" content="{{ predicate.predicate }}">
+
+	<h4 itemprop = "name">{{ predicate.name }}</h4>
+	<div itemprop="description">{{ predicate.description }}</div>
       </div>
       {% endfor %}
     </div>
+    </section>
 {% endblock %}
