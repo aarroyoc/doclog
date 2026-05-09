@@ -1,9 +1,29 @@
 {% extends "base.html" %}
 
 {% block extra_head %}
-    <link rel="sitemap" type="application/xml" href="/sitemap.xml">
+    <link rel="sitemap" type="application/xml" href="/sitemap.xml" />
+    <!-- Add structured data for the project -->
+    <meta property="og:keywords" content="Prolog, Scryer Prolog, logic programming, tutorials, libraries" />
+    <meta property="og:title" content="{{ project_name }}"> 
+    <meta property="og:description" content="Scryer Prolog documentation and learning resources" />
+    <meta property="og:image"  content="{{ base_url }}scryer.png" />
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="en_US" />
+
 {% endblock %}
 
 
 {% block title %}{{ project_name }}{% endblock %}
-{% block main %}{{ readme }}{% endblock %}
+{% block main %}
+<article itemscope itemtype="https://schema.org/SoftwareApplication">
+    <div itemprop="description">
+        {{ readme }}
+    </div>
+
+    <meta itemprop="applicationCategory" content="Programming Language Interpreter">
+    <meta  itemprop="image" content="{{ base_url }}scryer.png"  />
+
+    <meta itemprop="url" content="{{ base_url }}">
+    
+</article>
+{% endblock %}
