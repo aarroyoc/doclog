@@ -17,4 +17,4 @@ setup:
 	rm -rf djota
 	git clone --depth 1 --branch v0.3.4 https://github.com/aarroyoc/djota
 	rm -rf scryer-prolog
-	git clone --depth 1 https://github.com/mthom/scryer-prolog
+	git clone --depth 1 https://codeberg.org/mthom/scryer-prolog

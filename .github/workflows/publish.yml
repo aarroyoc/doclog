@@ -24,7 +24,7 @@ jobs:
       - name: Generate docs for https://www.scryer.pl
         run: make
       - name: Upload site
-        run: netlify deploy --prod --dir=output
+        run: netlify deploy --site $NETLIFY_SITE_ID --prod --dir=output
         env:
           NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
           NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
