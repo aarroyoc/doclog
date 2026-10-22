@@ -15,7 +15,7 @@ jobs:
       - name: Checkout Scryer Prolog
         run: git clone https://codeberg.org/mthom/scryer-prolog
       - name: Compile Scryer Prolog
-        run: cargo build --release
+        run: git checkout v0.10.0 && cargo build --release
         working-directory: scryer-prolog
       - name: Install Scryer Prolog
         run: sudo cp scryer-prolog/target/release/scryer-prolog /usr/bin/scryer-prolog
@@ -24,7 +24,7 @@ jobs:
       - name: Generate docs for https://www.scryer.pl
         run: make
       - name: Upload site
-        run: netlify deploy --site $NETLIFY_SITE_ID --prod --dir=output
+        run: netlify deploy --prod --dir=output
         env:
           NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
           NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
